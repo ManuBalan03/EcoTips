@@ -13,10 +13,17 @@ interface ApiResponse<T = any> {
 // En Vite, usamos import.meta.env en lugar de process.env
 const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  auth: {
+    username: 'admin',
+    password: 'admin'
+  },
   headers: {
     "Content-Type": "application/json"
   }
 });
+
+console.log("API URL:", import.meta.env.VITE_API_URL);
+
 
 // Interceptor para manejar errores globalmente (opcional)
 api.interceptors.response.use(

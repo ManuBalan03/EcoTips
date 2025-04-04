@@ -5,7 +5,9 @@ import { Usuario } from '../../api/types/userexample.ts';
 
 function ListaUsuarios() {
   // Especificar que el estado es un arreglo de tipo Usuario
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);  
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+
+
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);  // Especifica que el error puede ser un string o null
 
@@ -14,15 +16,25 @@ function ListaUsuarios() {
       try {
         setCargando(true);
         const data = await obtenerUsuarios();
-        setUsuarios(data);  // data debe ser un arreglo de tipo Usuario[]
+    
+        console.log("Datos obtenidos:", data); // <-- Verifica si es un array
+    
+        if (Array.isArray(data)) {
+          setUsuarios(data);
+        } else {
+          console.error("La API no devolvió un array:", data);
+          setUsuarios([]); // Evita errores si la API falla
+        }
+    
         setError(null);
       } catch (err) {
-        setError('Error al cargar los usuarios');
+        setError("Error al cargar los usuarios");
         console.error(err);
       } finally {
         setCargando(false);
       }
     };
+    
 
     cargarUsuarios();
   }, []);
@@ -35,7 +47,10 @@ function ListaUsuarios() {
       <h2>Lista de Usuarios</h2>
       <ul>
         {usuarios.map(usuario => (
-          <li key={usuario.id}>{usuario.nombre}</li>
+          <li key={usuario.id}>
+            {usuario.id} -{usuario.nombre}- {usuario.email}- {usuario.rol}
+            </li>
+          
         ))}
       </ul>
     </div>

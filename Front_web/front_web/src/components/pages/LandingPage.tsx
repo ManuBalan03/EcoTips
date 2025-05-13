@@ -1,15 +1,20 @@
 import './LandingPage.css'
-
-export const LandingPage = () => {
+// import "../layout/Defaultlayout.css";
+import { Link } from "react-router-dom";
+interface DefaultLayoutProps {
+  children: React.ReactNode;
+}
+export const LandingPage = ({children}: DefaultLayoutProps) => {
   return (
     <div>
       <nav className='Navegacion'>
-        <div className='Logo'> <img src="" alt='logo'/> <a className='TextLogo'> EcoTips</a></div>
+        <div className='Logo'> <img src="" alt='logo'/> <a className='TextLogo'> <Link to="/">EcoTips</Link></a></div>
           <ul>
-            <li><a className='InicioSesion' href=" " >Iniciar Sesión</a></li>
-            <li><a className='Registro' href=" ">Registrarme </a></li>
+            <li><a className='InicioSesion' href=" " ><Link to="/login">Iniciar Sesión</Link></a></li>
+            <li><a className='Registro' href=" "><Link to="/signup">Registrarse</Link> </a></li>
           </ul>
       </nav>
+      <main> {children} </main>
       <section>
         <div className='Contenido'>
           <div className='Texto'>

@@ -3,16 +3,20 @@ import com.example.demo.DTO.UserDTO;
 import com.example.demo.models.UserModel;
 import com.example.demo.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository repo;
 
     @Override
@@ -22,7 +26,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public List<UserDTO> obtenerTodos() {
-        return repo.findAll().stream().map(this::mapToDTO).collect(toList());
+        return repo.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -43,7 +47,8 @@ public class UserServiceImpl implements UserService{
                 u.getTelefono(),
                 u.getFotoPerfil(),
                 u.getNivel(),
-                u.getPuntosTotales()
+                u.getPuntosTotales(),
+                u.getContraseña()
         );
     }
 }

@@ -11,6 +11,7 @@ public class UserDTO {
     private String email;
     private String telefono;
     private String fotoPerfil;
-    private Integer nivel;
+    private String nivel;
     private Integer puntosTotales;
+    private String contraseña;
 }

@@ -26,7 +26,7 @@ public class UserModel {
 
     private String fotoPerfil;
 
-    private Integer nivel; // 0, 1, 2
+    private String nivel; // 0, 1, 2
 
     private Integer puntosTotales;
 

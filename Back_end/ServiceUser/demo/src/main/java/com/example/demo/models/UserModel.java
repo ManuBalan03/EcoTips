@@ -22,7 +22,7 @@ public class UserModel {
 
     private String telefono;
 
-    private String contraseña; // Cifrada
+    private String contrasenia; // Cifrada
 
     private String fotoPerfil;
 

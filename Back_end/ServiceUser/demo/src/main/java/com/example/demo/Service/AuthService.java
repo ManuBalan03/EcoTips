@@ -25,7 +25,7 @@ public class AuthService {
         newUser.setNombre(userDTO.getNombre());
         newUser.setEmail(userDTO.getEmail());
         newUser.setTelefono(userDTO.getTelefono());
-        newUser.setContraseña(passwordEncoder.encode(userDTO.getContraseña()));
+        newUser.setContrasenia(passwordEncoder.encode(userDTO.getContraseña()));
         newUser.setNivel("nivel 0");
         newUser.setPuntosTotales(0);
 

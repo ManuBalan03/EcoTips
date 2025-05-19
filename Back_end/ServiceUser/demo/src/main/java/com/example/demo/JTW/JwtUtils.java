@@ -1,4 +1,7 @@
 package com.example.demo.JTW;
+import com.example.demo.Service.UserDetailsImpl;
+import com.example.demo.Service.UserDetailsServiceImpl;
+import com.example.demo.Service.UserServiceImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,14 +12,17 @@ import java.security.Key;
 import java.util.Date;
 @Component
 public class JwtUtils {
-    private final String jwtSecret = "ecoTipsClaveSuperSeguraYlarga1234567890"; // mínimo 256 bits
+    private final String jwtSecret = "ecoTipsClaveSuperSeguraYlarga20030409"; // mínimo 256 bits
     private final long jwtExpirationMs = 86400000; // 24 horas
 
     private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
     public String generateJwtToken(Authentication authentication) {
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(userPrincipal.getUsername()) // el email
+                .claim("userId", userPrincipal.getId())   // ✅ aquí sí usas getId()
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)

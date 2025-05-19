@@ -19,6 +19,8 @@ import static java.util.stream.Collectors.toList;
 public class UserServiceImpl implements UserService {
     private final UserRepository repo;
 
+
+
     @Override
     public UserModel crearUsuario(UserModel usuario) {
         return repo.save(usuario);
@@ -48,7 +50,8 @@ public class UserServiceImpl implements UserService {
                 u.getFotoPerfil(),
                 u.getNivel(),
                 u.getPuntosTotales(),
-                u.getContraseña()
+                u.getContrasenia()
         );
     }
+
 }

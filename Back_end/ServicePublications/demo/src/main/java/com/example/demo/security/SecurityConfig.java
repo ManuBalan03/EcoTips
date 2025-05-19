@@ -1,7 +1,6 @@
 package com.example.demo.security;
 
-import com.example.demo.JTW.JwtAuthEntryPoint;
-import com.example.demo.JTW.JwtAuthTokenFilter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,17 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthEntryPoint unauthorizedHandler;
-    private final JwtAuthTokenFilter jwtAuthTokenFilter;
-    private final UserDetailsServiceImpl userDetailsService;
-
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
     }
-    
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

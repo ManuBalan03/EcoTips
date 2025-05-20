@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-
 public class PublicacionDTO {
     private Long id;
     private String contenido;
@@ -17,4 +14,18 @@ public class PublicacionDTO {
     private Long idUsuario;
     private String descripcion;
     private LocalDateTime fechaCreacion;
+    private String nombreAutor;
+
+
+    public PublicacionDTO() {}
+
+    // Constructor parcial si quieres
+    public PublicacionDTO(Long id, String contenido, String titulo, Long idUsuario, String descripcion, LocalDateTime fechaCreacion) {
+        this.id = id;
+        this.contenido = contenido;
+        this.titulo = titulo;
+        this.idUsuario = idUsuario;
+        this.descripcion = descripcion;
+        this.fechaCreacion = fechaCreacion;
+    }
 }

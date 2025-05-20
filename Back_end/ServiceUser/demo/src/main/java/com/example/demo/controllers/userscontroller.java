@@ -13,14 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class userscontroller {
 
-//        private List<usuariosexample> customers = new ArrayList<>(Arrays.asList(
-//                new usuariosexample(001L,"Juan","halo1222@gmail.com","uswe1"),
-//                new usuariosexample(002L,"Arturo","system@gmail.com","admin"),
-//                new usuariosexample(003L,"Abraham","truxxitos@gmail.com","admin2"),
-//                new usuariosexample(004L,"Yomara", "system@gmail.com","adds")
-//        ));
-
-
         private final UserService service;
 
         @PostMapping

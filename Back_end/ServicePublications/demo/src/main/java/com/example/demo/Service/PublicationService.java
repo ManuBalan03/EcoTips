@@ -2,6 +2,8 @@ package com.example.demo.Service;
 
 import com.example.demo.Repository.PublicationRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.models.PublicationsModel;
 import com.example.demo.DTO.PublicacionDTO;
@@ -11,18 +13,32 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PublicationService implements PublicationsService {
+
+
+    @Lazy
+    @Autowired
+    private UsuarioService usuarioService;
 
     private final PublicationRepository repo;
 
+
+    @Autowired
+    public PublicationService(PublicationRepository repo) {
+        this.repo = repo;
+    }
     @Override
     public PublicacionDTO crear(PublicacionDTO dto) {
         PublicationsModel entidad = mapToEntity(dto);
         entidad.setFechaCreacion(LocalDateTime.now());
         entidad.setEstado("PENDIENTE");
         PublicationsModel guardada = repo.save(entidad);
-        return mapToDTO(guardada);
+        PublicacionDTO resultado = mapToDTO(guardada);
+        // Aquí inyectas el nombre del autor
+        String nombreAutor = usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
+        resultado.setNombreAutor(nombreAutor);
+
+        return resultado;
     }
 
     @Override
@@ -49,7 +65,6 @@ public class PublicationService implements PublicationsService {
         repo.deleteById(id);
     }
 
-    // ✅ Métodos de conversión
     private PublicacionDTO mapToDTO(PublicationsModel model) {
         return new PublicacionDTO(
                 model.getIdPublicacion(),
@@ -65,6 +80,7 @@ public class PublicationService implements PublicationsService {
         PublicationsModel m = new PublicationsModel();
         m.setTitulo(dto.getTitulo());
         m.setContenido(dto.getContenido());
+        m.setDescripcion(dto.getDescripcion());
         m.setIdUsuario(dto.getIdUsuario());
         return m;
     }

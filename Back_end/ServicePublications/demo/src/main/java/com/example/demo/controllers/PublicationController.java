@@ -22,8 +22,9 @@ public class PublicationController {
     public ResponseEntity<PublicacionDTO> crear(@RequestHeader("Authorization") String authHeader,
                                                 @RequestBody PublicacionDTO dto) {
         String token = authHeader.replace("Bearer ", "");
-        Long idUsuario = jwtUtils.getUserIdFromToken(token); // Método que debes implementar en JwtUtils
+        Long idUsuario = jwtUtils.getUserIdFromToken(token);
         dto.setIdUsuario(idUsuario);
+
 
         return ResponseEntity.ok(service.crear(dto));
     }

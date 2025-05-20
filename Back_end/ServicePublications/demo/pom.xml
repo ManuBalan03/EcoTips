@@ -93,21 +93,25 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Dependencias necesarias con jjwt 0.11.5+ -->
+		<!-- API principal de JJWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
 		</dependency>
+
+		<!-- Implementación interna (necesaria en tiempo de ejecución) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Dependencias necesarias con jjwt 0.11.5+ -->
+
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-jackson</artifactId>
+			<artifactId>jjwt-jackson</artifactId> <!-- usa Jackson como deserializador -->
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>

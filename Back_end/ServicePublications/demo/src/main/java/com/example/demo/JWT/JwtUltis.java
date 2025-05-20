@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
+@Component
 public class JwtUltis {
     private final String jwtSecret = "ecoTipsClaveSuperSeguraYlarga20030409";
     private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());

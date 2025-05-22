@@ -12,7 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         // Permitir solicitudes de cualquier origen
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173") // Aquí defines el origen del frontend
+                .allowedOrigins(
+                        "http://localhost:5173",  // Frontend web (Vite/React)
+                        "http://localhost:8081",  // React Native/Expo (Metro Bundler)
+                        "exp://192.168.x.x:8081"  // Para dispositivos en red local (opcional)
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE") // Los métodos que deseas permitir
                 .allowedHeaders("*") // Permitir todos los encabezados
                 .allowCredentials(true);

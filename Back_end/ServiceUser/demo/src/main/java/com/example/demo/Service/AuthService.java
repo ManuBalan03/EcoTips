@@ -5,6 +5,7 @@ import com.example.demo.JTW.JwtUtils;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.models.UserModel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +22,12 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    public void register(UserDTO userDTO) {
+    public ResponseEntity<?> register(UserDTO userDTO) {
+        // Verificar si el usuario ya existe
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new RuntimeException("El correo electrónico ya está registrado");
+        }
+
         UserModel newUser = new UserModel();
         newUser.setNombre(userDTO.getNombre());
         newUser.setEmail(userDTO.getEmail());
@@ -31,6 +37,8 @@ public class AuthService {
         newUser.setPuntosTotales(0);
 
         userRepository.save(newUser);
+
+        return ResponseEntity.ok("Usuario registrado exitosamente");
     }
 
     public String login(LoginDTO loginDTO) {

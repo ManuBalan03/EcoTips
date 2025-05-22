@@ -43,10 +43,16 @@ public class PublicationService implements PublicationsService {
 
     @Override
     public List<PublicacionDTO> listarTodas() {
-        return repo.findAll().stream()
-                .map(this::mapToDTO)
+        return repo.findAllByOrderByFechaCreacionDesc().stream()
+                .map(pub -> {
+                    PublicacionDTO dto = mapToDTO(pub);
+                    String nombreAutor = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
+                    dto.setNombreAutor(nombreAutor);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public List<PublicacionDTO> listarPorUsuario(Long idUsuario) {

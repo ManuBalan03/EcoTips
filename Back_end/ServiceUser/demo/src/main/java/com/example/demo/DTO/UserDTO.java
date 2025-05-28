@@ -15,3 +15,4 @@ public class UserDTO {
     private Integer puntosTotales;
     private String contraseña;
 }
+//json para registrar

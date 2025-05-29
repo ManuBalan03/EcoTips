@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     private final String jwtSecret = "ecoTipsClaveSuperSeguraYlarga20030409";
-    private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

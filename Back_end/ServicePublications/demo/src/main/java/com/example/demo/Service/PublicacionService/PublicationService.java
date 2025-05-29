@@ -1,7 +1,7 @@
-package com.example.demo.Service;
+package com.example.demo.Service.PublicacionService;
 
 import com.example.demo.Repository.PublicationRepository;
-import lombok.RequiredArgsConstructor;
+import com.example.demo.Service.UsuarioService;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

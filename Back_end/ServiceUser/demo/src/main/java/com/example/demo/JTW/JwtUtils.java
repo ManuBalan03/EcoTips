@@ -17,6 +17,7 @@ public class JwtUtils {
 
     private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
+
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 

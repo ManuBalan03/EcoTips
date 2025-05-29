@@ -1,10 +1,9 @@
 package com.example.demo.controllers;
 
-import com.example.demo.Service.PublicationsService;
+import com.example.demo.Service.PublicacionService.PublicationsService;
 import com.example.demo.JWT.JwtUltis;
 import com.example.demo.DTO.PublicacionDTO;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 

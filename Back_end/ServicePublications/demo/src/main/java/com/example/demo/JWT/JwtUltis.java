@@ -12,15 +12,19 @@ public class JwtUltis {
     private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
     public Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -31,14 +35,7 @@ public class JwtUltis {
         return getClaims(token).getSubject();
     }
 
-
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key) // key debe estar definido y compartido entre microservicios
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return Long.parseLong(claims.get("userId").toString());
+        return Long.parseLong(getClaims(token).get("userId").toString());
     }
 }

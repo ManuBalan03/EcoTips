@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ComentariosService {
 
-    ComentariosModel guardarComentario(ComentarioDTO dto);
+    ComentarioDTO crearComentario(ComentarioDTO dto);
 
-    List<ComentarioDTO> listarTodas();
+    List<ComentarioDTO> listarComentariosPorPublicacion(Long idPublicacion);
 }

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
-public class ComentarioService {
+public class ComentarioService implements  ComentariosService{
 
     private final ComentariosRepository comentariosRepository;
     private final PublicationRepository publicationsRepository;

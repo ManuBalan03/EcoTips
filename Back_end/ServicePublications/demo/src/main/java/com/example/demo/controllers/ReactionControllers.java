@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reacciones")
+@RequestMapping("/api/publicaciones/reacciones")
 @RequiredArgsConstructor
 public class ReactionControllers {
 
@@ -32,5 +32,11 @@ public class ReactionControllers {
     @GetMapping("/conteo/{id}")
     public ResponseEntity<Map<String, Long>> contarReaccionesPorTipo(@PathVariable Long id) {
         return ResponseEntity.ok(reactionsService.contarReaccionesPorTipo(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarReaccion(@PathVariable Long id) {
+        reactionsService.eliminarReaccion(id);
+        return ResponseEntity.noContent().build();
     }
 }

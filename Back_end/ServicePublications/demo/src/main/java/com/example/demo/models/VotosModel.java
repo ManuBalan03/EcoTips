@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import com.example.demo.models.Enum.TipoVoto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,10 @@ public class VotosModel {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String Comentario;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoVoto voto;
 
     @Column(nullable = false)
     private LocalDateTime fechaVoto;

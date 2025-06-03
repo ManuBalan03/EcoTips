@@ -20,33 +20,34 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ComentarioService implements  ComentariosService{
 
+    @Lazy
+    @Autowired
+    private UsuarioService usuarioService;
+
     private final ComentariosRepository comentariosRepository;
     private final PublicationRepository publicationsRepository;
 
     public ComentarioDTO crearComentario(ComentarioDTO dto) {
-        // Buscar la publicación por ID
         PublicationsModel publicacion = publicationsRepository.findById(dto.getIdPublicacion())
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + dto.getIdPublicacion()));
 
-        // Crear el modelo
-        ComentariosModel comentario = ComentariosModel.builder()
-                .contenido(dto.getContenido())
-                .fechaCreacion(LocalDateTime.now())
-                .publicacion(publicacion)
-                .idUsuario(dto.getIdUsuario())
-                .build();
-
-        // Guardar el comentario
-        ComentariosModel comentarioGuardado = comentariosRepository.save(comentario);
-
-        // Retornar DTO
-        return new ComentarioDTO(
-                comentarioGuardado.getIdcomentario(),
-                comentarioGuardado.getPublicacion().getIdPublicacion(),
-                comentarioGuardado.getContenido(),
-                comentarioGuardado.getIdUsuario(),
-                comentarioGuardado.getFechaCreacion()
+        ComentariosModel comentarioGuardado = comentariosRepository.save(
+                ComentariosModel.builder()
+                        .contenido(dto.getContenido())
+                        .fechaCreacion(LocalDateTime.now())
+                        .publicacion(publicacion)
+                        .idUsuario(dto.getIdUsuario())
+                        .build()
         );
+        System.out.println("vamosss "+ usuarioService.obtenerNombrePorId(comentarioGuardado.getIdUsuario()));
+        return ComentarioDTO.builder()
+                .idcomentario(comentarioGuardado.getIdcomentario())
+                .idPublicacion(comentarioGuardado.getPublicacion().getIdPublicacion())
+                .contenido(comentarioGuardado.getContenido())
+                .idUsuario(comentarioGuardado.getIdUsuario())
+                .fechaCreacion(comentarioGuardado.getFechaCreacion())
+                .nombreAutor(usuarioService.obtenerNombrePorId(comentarioGuardado.getIdUsuario()))
+                .build();
     }
 
     public List<ComentarioDTO> listarComentariosPorPublicacion(Long idPublicacion) {
@@ -56,7 +57,8 @@ public class ComentarioService implements  ComentariosService{
                 comentario.getPublicacion().getIdPublicacion(),
                 comentario.getContenido(),
                 comentario.getIdUsuario(),
-                comentario.getFechaCreacion()
+                comentario.getFechaCreacion(),
+                usuarioService.obtenerNombrePorId(comentario.getIdUsuario())
         )).toList();
     }
 

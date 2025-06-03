@@ -15,4 +15,6 @@ public interface ReactionsService {
     List<ReactionsDTO> listarReaccionesPorPublicacion(Long idPublicacion);
 
     Map<String, Long> contarReaccionesPorTipo(Long idPublicacion);
+
+    void eliminarReaccion(Long idReaccion);
 }

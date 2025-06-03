@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import com.example.demo.models.Enum.TipoReacciones;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +21,9 @@ public class ReactionsModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idReaciones;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String Tipo;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoReacciones Tipo;
 
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;

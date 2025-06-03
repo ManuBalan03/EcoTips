@@ -1,5 +1,6 @@
 package com.example.demo.DTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -7,10 +8,19 @@ import java.time.LocalDateTime;
 
 @Data
 public class ReactionsDTO {
+    @JsonProperty("Tipo") // Mapea tanto "Tipo" como "tipo" del JSON
     private String Tipo;
+
+    @JsonProperty("idReaccion")
     private Long idReaccion;
+
+    @JsonProperty("idUsuario")
     private Long idUsuario;
+
+    @JsonProperty("idPublicacion")
     private Long idPublicacion;
+
+    @JsonProperty("fechaCreacion")
     private LocalDateTime fechaCreacion;
     private String nombreAutor;
 

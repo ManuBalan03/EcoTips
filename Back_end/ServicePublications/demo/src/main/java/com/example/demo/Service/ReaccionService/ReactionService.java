@@ -5,12 +5,15 @@ import com.example.demo.Repository.ComentariosRepository;
 import com.example.demo.Repository.PublicationRepository;
 import com.example.demo.Repository.ReactionsRepository;
 import com.example.demo.Service.PublicacionService.PublicationsService;
+import com.example.demo.Service.UsuarioService;
+import com.example.demo.models.Enum.TipoReacciones;
 import com.example.demo.models.PublicationsModel;
 import com.example.demo.models.ReactionsModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,44 +26,51 @@ public class ReactionService implements  ReactionsService{
 
     private final ReactionsRepository  ReactionRepository;
     private final PublicationRepository publicationsRepository;
+    private UsuarioService usuarioService;
 
     public ReactionsDTO crearReaccion(ReactionsDTO dto) {
-        // Buscar la publicación por ID
-        PublicationsModel publicacion = publicationsRepository.findById(dto.getIdPublicacion())
-                .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + dto.getIdPublicacion()));
-
-        // Buscar si ya existe una reacción del usuario
-        Optional<ReactionsModel> existente = ReactionRepository
-                .findByPublicacionIdPublicacionAndIdUsuario(dto.getIdPublicacion(), dto.getIdUsuario());
-
-        ReactionsModel reaccion;
-
-        if (existente.isPresent()) {
-            // Si ya existe, actualizamos la reacción
-            reaccion = existente.get();
-            reaccion.setTipo(dto.getTipo());
-            reaccion.setFechaCreacion(LocalDateTime.now());
-        } else {
-            // Si no existe, la creamos
-            reaccion = ReactionsModel.builder()
-                    .Tipo(dto.getTipo())
-                    .fechaCreacion(LocalDateTime.now())
-                    .publicacion(publicacion)
-                    .idUsuario(dto.getIdUsuario())
-                    .build();
+        // Validación del tipo de reacción
+        if (dto.getTipo() == null || dto.getTipo().trim().isEmpty()) {
+            throw new IllegalArgumentException("El tipo de reacción no puede ser nulo o vacío");
         }
 
-        // Guardamos la reacción (creada o actualizada)
-        ReactionsModel reaccionGuardada = ReactionRepository.save(reaccion);
+        try {
+            TipoReacciones tipo = TipoReacciones.fromString(dto.getTipo());
 
-        // Retornamos el DTO
-        return new ReactionsDTO(
-                reaccionGuardada.getIdReaciones(),
-                reaccionGuardada.getPublicacion().getIdPublicacion(),
-                reaccionGuardada.getTipo(),
-                reaccionGuardada.getIdUsuario(),
-                reaccionGuardada.getFechaCreacion()
-        );
+            PublicationsModel publicacion = publicationsRepository.findById(dto.getIdPublicacion())
+                    .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
+
+            Optional<ReactionsModel> existente = ReactionRepository
+                    .findByPublicacionIdPublicacionAndIdUsuario(dto.getIdPublicacion(), dto.getIdUsuario());
+
+            ReactionsModel reaccion;
+
+            if (existente.isPresent()) {
+                reaccion = existente.get();
+                reaccion.setTipo(tipo);
+            } else {
+                reaccion = ReactionsModel.builder()
+                        .Tipo(tipo)
+                        .publicacion(publicacion)
+                        .idUsuario(dto.getIdUsuario())
+                        .build();
+            }
+
+            reaccion.setFechaCreacion(LocalDateTime.now());
+            ReactionsModel reaccionGuardada = ReactionRepository.save(reaccion);
+
+            return new ReactionsDTO(
+                    reaccionGuardada.getIdReaciones(),
+                    reaccionGuardada.getPublicacion().getIdPublicacion(),
+                    reaccionGuardada.getTipo().getValue(),
+                    reaccionGuardada.getIdUsuario(),
+                    reaccionGuardada.getFechaCreacion()
+            );
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Tipo de reacción inválido: " + dto.getTipo() +
+                    ". Tipos válidos: " + Arrays.toString(TipoReacciones.values()));
+        }
     }
 
 
@@ -69,7 +79,7 @@ public class ReactionService implements  ReactionsService{
         return Reacciones.stream().map(Reaccion -> new ReactionsDTO(
                 Reaccion.getIdReaciones(),
                 Reaccion.getPublicacion().getIdPublicacion(),
-                Reaccion.getTipo(),
+                Reaccion.getTipo().name(),
                 Reaccion.getIdUsuario(),
                 Reaccion.getFechaCreacion()
         )).toList();
@@ -78,8 +88,15 @@ public class ReactionService implements  ReactionsService{
     public Map<String, Long> contarReaccionesPorTipo(Long idPublicacion) {
         List<ReactionsModel> reacciones = ReactionRepository.findByPublicacionIdPublicacion(idPublicacion);
         return reacciones.stream()
-                .collect(Collectors.groupingBy(ReactionsModel::getTipo, Collectors.counting()));
+                .collect(Collectors.groupingBy(r -> r.getTipo().name(), Collectors.counting()));
     }
 
+
+    public void eliminarReaccion(Long idReaccion) {
+        if (!ReactionRepository.existsById(idReaccion)) {
+            throw new RuntimeException("Reacción no encontrada con ID: " + idReaccion);
+        }
+        ReactionRepository.deleteById(idReaccion);
+    }
 
 }

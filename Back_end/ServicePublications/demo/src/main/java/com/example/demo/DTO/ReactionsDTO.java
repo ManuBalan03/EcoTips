@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class ReactionsDTO {
-    @JsonProperty("Tipo") // Mapea tanto "Tipo" como "tipo" del JSON
+    @JsonProperty("Tipo")
     private String Tipo;
 
     @JsonProperty("idReaccion")

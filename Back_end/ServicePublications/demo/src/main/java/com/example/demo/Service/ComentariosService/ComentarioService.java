@@ -39,26 +39,30 @@ public class ComentarioService implements  ComentariosService{
                         .idUsuario(dto.getIdUsuario())
                         .build()
         );
-        System.out.println("vamosss "+ usuarioService.obtenerNombrePorId(comentarioGuardado.getIdUsuario()));
+        String [] Datos = usuarioService.obtenerNombrePorId(comentarioGuardado.getIdUsuario());
+        System.out.println("vamosss "+ Datos[1]+ Datos[0]);
         return ComentarioDTO.builder()
                 .idcomentario(comentarioGuardado.getIdcomentario())
                 .idPublicacion(comentarioGuardado.getPublicacion().getIdPublicacion())
                 .contenido(comentarioGuardado.getContenido())
                 .idUsuario(comentarioGuardado.getIdUsuario())
                 .fechaCreacion(comentarioGuardado.getFechaCreacion())
-                .nombreAutor(usuarioService.obtenerNombrePorId(comentarioGuardado.getIdUsuario()))
+                .nombreAutor(Datos[0])
+                .fotoPerfil(Datos[1])
                 .build();
     }
 
     public List<ComentarioDTO> listarComentariosPorPublicacion(Long idPublicacion) {
         List<ComentariosModel> comentarios = comentariosRepository.findByPublicacionIdPublicacion(idPublicacion);
+
         return comentarios.stream().map(comentario -> new ComentarioDTO(
                 comentario.getIdcomentario(),
                 comentario.getPublicacion().getIdPublicacion(),
                 comentario.getContenido(),
                 comentario.getIdUsuario(),
                 comentario.getFechaCreacion(),
-                usuarioService.obtenerNombrePorId(comentario.getIdUsuario())
+                usuarioService.obtenerNombrePorId(comentario.getIdUsuario())[0],
+                usuarioService.obtenerNombrePorId(comentario.getIdUsuario())[1]
         )).toList();
     }
 

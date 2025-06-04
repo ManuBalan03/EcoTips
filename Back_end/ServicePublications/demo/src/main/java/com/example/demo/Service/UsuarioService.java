@@ -25,7 +25,8 @@ public class UsuarioService {
     @Autowired
     private HttpServletRequest request;
 
-    public String obtenerNombrePorId(Long idUsuario) {
+    public String[] obtenerNombrePorId(Long idUsuario) {
+        String[] Datos = new String[3];
         try {
             // Crear HttpHeaders y añadir el token JWT del contexto actual
             HttpHeaders headers = new HttpHeaders();
@@ -46,10 +47,16 @@ public class UsuarioService {
             );
 
             UserDTO usuario = response.getBody();
-            return usuario != null ? usuario.getNombre() : "Desconocido";
+
+            Datos[0]=usuario != null ? usuario.getNombre() : "Desconocido";
+            Datos[1]=usuario != null ? usuario.getFotoPerfil() : "";
+            return Datos;
+
         } catch (Exception e) {
             e.printStackTrace(); // para ver detalle en consola
-            return "Desconocido";
+            Datos[0]="Desconocido";
+            Datos[1]="";
+            return Datos;
         }
     }
 }

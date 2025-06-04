@@ -35,7 +35,7 @@ public class PublicationService implements PublicationsService {
         PublicationsModel guardada = repo.save(entidad);
         PublicacionDTO resultado = mapToDTO(guardada);
         // Aquí inyectas el nombre del autor
-        String nombreAutor = usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
+        String nombreAutor = usuarioService.obtenerNombrePorId(resultado.getIdUsuario())[0];
         resultado.setNombreAutor(nombreAutor);
 
         return resultado;
@@ -46,7 +46,7 @@ public class PublicationService implements PublicationsService {
         return repo.findAllByOrderByFechaCreacionDesc().stream()
                 .map(pub -> {
                     PublicacionDTO dto = mapToDTO(pub);
-                    String nombreAutor = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
+                    String nombreAutor = usuarioService.obtenerNombrePorId(dto.getIdUsuario())[0];
                     dto.setNombreAutor(nombreAutor);
                     return dto;
                 })

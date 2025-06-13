@@ -23,7 +23,7 @@ public class VotosModel {
     private Long idVotos;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String Comentario;
+    private String comentario;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

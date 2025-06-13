@@ -15,6 +15,7 @@ public class PublicacionDTO {
     private String descripcion;
     private LocalDateTime fechaCreacion;
     private String nombreAutor;
+    private String fotoPerfil;
 
 
     public PublicacionDTO() {}

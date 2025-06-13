@@ -1,0 +1,21 @@
+package com.example.demo.Repository;
+
+import com.example.demo.models.PublicationsModel;
+import com.example.demo.models.ReactionsModel;
+import com.example.demo.models.VotosModel;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface VoteRepository  extends JpaRepository<VotosModel, Long> {
+
+    List<VotosModel> findByPublicacionIdPublicacion(Long idPublicacion);
+    Optional<VotosModel> findByPublicacionIdPublicacionAndIdUsuario(Long idPublicacion, Long IdUsuario);
+//    @Query("SELECT v.publicacion.idPublicacion FROM VotosModel v WHERE v.idUsuario = :idUsuario")
+//    List<Long> findIdPublicacionesByIdUsuario(Long idUsuario);
+boolean existsByPublicacionIdPublicacionAndIdUsuario(Long idPublicacion, Long idUsuario);
+
+
+}

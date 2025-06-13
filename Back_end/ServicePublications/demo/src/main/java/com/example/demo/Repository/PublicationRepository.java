@@ -7,5 +7,7 @@ import java.util.List;
 public interface PublicationRepository extends JpaRepository<PublicationsModel, Long> {
     List<PublicationsModel> findByIdUsuario(Long idUsuario);
     List<PublicationsModel> findAllByOrderByFechaCreacionDesc();
+    List<PublicationsModel> findByEstadoOrderByFechaCreacionDesc(String estado);
+
 
 }

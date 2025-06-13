@@ -11,15 +11,15 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class ComentarioDTO {
-    private Long idcomentario;       // Debe ser Long
-    private Long idPublicacion;      // Debe ser Long
-    private String contenido;        // String para el texto del comentario
-    private Long idUsuario;          // Debe ser Long
+    private Long idcomentario;
+    private Long idPublicacion;
+    private String contenido;
+    private Long idUsuario;
     private LocalDateTime fechaCreacion;
     private String nombreAutor;
     private String fotoPerfil;
 
-    // Constructores adicionales si los necesitas
+
     public ComentarioDTO() {}
 
     public ComentarioDTO(Long idcomentario, Long idPublicacion, String contenido,

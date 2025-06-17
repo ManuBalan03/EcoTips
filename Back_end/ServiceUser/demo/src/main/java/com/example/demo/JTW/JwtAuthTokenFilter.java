@@ -29,8 +29,25 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // ⚠️ Ignorar documentación Swagger completamente
+        if (path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.equals("/swagger-ui.html") ||
+                path.startsWith("/webjars")) {  // a veces Swagger usa esta ruta
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ✅ Solo validar si hay header Authorization
         String jwt = parseJwt(request);
-        if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+        if (jwt == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (jwtUtils.validateJwtToken(jwt)) {
             String username = jwtUtils.getUserNameFromJwtToken(jwt);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 

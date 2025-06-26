@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "notificaciones")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificaionesModel {

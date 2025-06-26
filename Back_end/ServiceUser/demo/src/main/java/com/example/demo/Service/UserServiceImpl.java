@@ -1,4 +1,5 @@
 package com.example.demo.Service;
+import com.example.demo.DTO.UpdateUserDTO;
 import com.example.demo.DTO.UserDTO;
 import com.example.demo.models.UserModel;
 import com.example.demo.Repository.UserRepository;
@@ -52,6 +53,40 @@ public class UserServiceImpl implements UserService {
                 u.getPuntosTotales(),
                 u.getContrasenia()
         );
+    }
+
+    @Override
+    public UserDTO sumarPuntosUsuario(Long idUsuario, UpdateUserDTO dto) {
+        UserModel usuario = repo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+
+        System.out.println("entroo"+ dto.getPuntosTotales());
+        int puntosASumar= dto.getPuntosTotales();
+        int puntosActuales = usuario.getPuntosTotales();
+        int puntostotales = puntosActuales+puntosASumar;
+
+        if (puntostotales>=100){
+            usuario= SubirNivel(usuario);
+            puntostotales=puntostotales-100;
+        }
+        usuario.setPuntosTotales(puntostotales);
+        System.out.println(usuario.getNivel());
+        UserModel actualizado = repo.save(usuario);
+
+        return mapToDTO(actualizado);
+    }
+
+
+    public UserModel SubirNivel(UserModel usuario ){
+        String nivel =usuario.getNivel();
+        System.out.println(usuario.getNivel());
+        if (nivel.equals("nivel 0")){
+            usuario.setNivel("nivel 1");
+        }
+        if (nivel.equals("nivel 1")){
+            usuario.setNivel("nivel 2");
+        }
+        return usuario;
     }
 
 }

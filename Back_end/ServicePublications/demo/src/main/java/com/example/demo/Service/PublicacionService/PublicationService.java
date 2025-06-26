@@ -1,10 +1,11 @@
 package com.example.demo.Service.PublicacionService;
 
+import com.example.demo.DTO.NotificationsDTO;
+import com.example.demo.DTO.UpdateUserDTO;
 import com.example.demo.Repository.PublicationRepository;
 import com.example.demo.Repository.VoteRepository;
+import com.example.demo.Service.NotificationsService;
 import com.example.demo.Service.UsuarioService;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.models.PublicationsModel;
@@ -15,20 +16,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-//@RequiredArgsConstructor
 public class PublicationService implements PublicationsService {
 
 
-    @Lazy
-    @Autowired
-    private UsuarioService usuarioService;
+
+    private final UsuarioService usuarioService;
+
+    private final NotificationsService notificationsService;
 
     private final PublicationRepository repo;
     private final VoteRepository VoteRepository;
 
 
     @Autowired
-    public PublicationService(PublicationRepository repo, VoteRepository voteRepository) {
+    public PublicationService(UsuarioService usuarioService, NotificationsService notificationsService, PublicationRepository repo, VoteRepository voteRepository) {
+        this.usuarioService = usuarioService;
+        this.notificationsService = notificationsService;
         this.repo = repo;
         VoteRepository = voteRepository;
     }
@@ -37,6 +40,7 @@ public class PublicationService implements PublicationsService {
         PublicationsModel entidad = mapToEntity(dto);
         entidad.setFechaCreacion(LocalDateTime.now());
         entidad.setEstado("PENDIENTE");
+        entidad.setPuntos(0);
         PublicationsModel guardada = repo.save(entidad);
         PublicacionDTO resultado = mapToDTO(guardada);
         // Aquí inyectas el nombre del
@@ -45,25 +49,21 @@ public class PublicationService implements PublicationsService {
         String foto =Datos[1];
         resultado.setNombreAutor(nombreAutor);
         resultado.setFotoPerfil(foto);
+
+
+
+
+        notificationsService.enviarNotificacion(
+                new NotificationsDTO(
+                        "Solicitud Publicacion", "Tu publicacion esta en espera de alta",
+                        LocalDateTime.now(),
+                        resultado.getIdUsuario()
+                )
+        );
         return resultado;
     }
 
 
-//    @Override
-//    public List<PublicacionDTO> listarTodas(String estado, Long idUsuarioActual) {
-//
-//        return repo.findByEstadoOrderByFechaCreacionDesc(estado).stream()
-//                .map(pub -> {
-//                    PublicacionDTO dto = mapToDTO(pub);
-//                    String [] Datos= usuarioService.obtenerNombrePorId(dto.getIdUsuario());
-//                    String nombreAutor = Datos[0];
-//                    String foto =Datos[1];
-//                    dto.setNombreAutor(nombreAutor);
-//                    dto.setFotoPerfil(foto);
-//                    return dto;
-//                })
-//                .collect(Collectors.toList());
-//    }
 
     @Override
     public List<PublicacionDTO> listarTodas(String estado, Long idUsuarioActual) {
@@ -111,24 +111,69 @@ public class PublicationService implements PublicationsService {
         repo.deleteById(id);
     }
 
-    private PublicacionDTO mapToDTO(PublicationsModel model) {
+    public PublicacionDTO mapToDTO(PublicationsModel model) {
         return new PublicacionDTO(
                 model.getIdPublicacion(),
                 model.getContenido(),
                 model.getTitulo(),
                 model.getIdUsuario(),
                 model.getDescripcion(),
-                model.getFechaCreacion()
+                model.getFechaCreacion(),
+                model.getPuntos()
         );
     }
 
-    private PublicationsModel mapToEntity(PublicacionDTO dto) {
+    public PublicationsModel mapToEntity(PublicacionDTO dto) {
         PublicationsModel m = new PublicationsModel();
         m.setTitulo(dto.getTitulo());
         m.setContenido(dto.getContenido());
         m.setDescripcion(dto.getDescripcion());
         m.setIdUsuario(dto.getIdUsuario());
         return m;
+    }
+
+    @Override
+    public PublicacionDTO actualizarPublicacion(Long id, PublicacionDTO dto) {
+        PublicationsModel existente = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + id));
+
+        // Solo actualizamos campos permitidos (contenido, título, descripción)
+        existente.setTitulo(dto.getTitulo());
+        existente.setContenido(dto.getContenido());
+        existente.setDescripcion(dto.getDescripcion());
+
+
+        PublicationsModel actualizada = repo.save(existente);
+
+        PublicacionDTO resultado = mapToDTO(actualizada);
+        String[] datos = usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
+        resultado.setNombreAutor(datos[0]);
+        resultado.setFotoPerfil(datos[1]);
+
+        return resultado;
+    }
+
+    @Override
+    public PublicacionDTO actualizarEstadoPublicacion(Long id, String nuevoEstado) {
+        PublicationsModel publicacion = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + id));
+
+        publicacion.setEstado(nuevoEstado);
+        publicacion.setPuntos(10);
+
+        usuarioService.actualizarUsuarioRemoto(publicacion.getIdUsuario(),
+                UpdateUserDTO.builder()
+                .puntosTotales(10)
+                .build());
+
+        PublicationsModel actualizada = repo.save(publicacion);
+
+        PublicacionDTO resultado = mapToDTO(actualizada);
+        String[] datos = usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
+        resultado.setNombreAutor(datos[0]);
+        resultado.setFotoPerfil(datos[1]);
+
+        return resultado;
     }
 
 }

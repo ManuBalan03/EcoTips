@@ -30,25 +30,49 @@ public class SecurityConfig {
     private final JwtAuthTokenFilter jwtAuthTokenFilter;
     private final UserDetailsServiceImpl userDetailsService;
 
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .cors(Customizer.withDefaults())
+//                .csrf(csrf -> csrf.disable())
+//                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/api/auth/**",
+//                                "/swagger-ui.html",
+//                                "/swagger-ui/**",
+//                                "/api/notificaciones/**",
+//                                "/v3/api-docs",
+//                                "/v3/api-docs/**",
+//                                "/webjars/**" ,
+//                                "/proxy/**"// añade esta línea también
+//                        ).permitAll()
+//                        // permitir login, registro
+//                        .anyRequest().authenticated() // proteger lo demás
+//                );
+//
+//        http.authenticationProvider(authenticationProvider());
+//        http.addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Usa tu propia configuración CORS
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/v3/api-docs",
                                 "/v3/api-docs/**",
-                                "/webjars/**" ,
-                                "/proxy/**"// añade esta línea también
-                        ).permitAll()
-                        // permitir login, registro
-                        .anyRequest().authenticated() // proteger lo demás
+                                "/webjars/**"
+                        ).permitAll()// Exige autenticación para notificaciones
+                        .anyRequest().authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());

@@ -11,4 +11,8 @@ public interface PublicationsService {
     List<PublicacionDTO> listarPorUsuario(Long idUsuario);
     Optional<PublicacionDTO> obtenerPorId(Long id);
     void eliminar(Long id);
+
+    PublicacionDTO actualizarPublicacion(Long id, PublicacionDTO dto);
+
+    PublicacionDTO actualizarEstadoPublicacion(Long id, String nuevoEstado);
 }

@@ -31,33 +31,34 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // ⚠️ Ignorar documentación Swagger completamente
-        if (path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs") ||
-                path.equals("/swagger-ui.html") ||
-                path.startsWith("/webjars")) {  // a veces Swagger usa esta ruta
+        // Lista de rutas públicas
+        if (path.startsWith("/api/auth") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ Solo validar si hay header Authorization
         String jwt = parseJwt(request);
-        if (jwt == null) {
+        if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
+            System.out.println("✅ JWT válido en notificaciones");
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (jwtUtils.validateJwtToken(jwt)) {
-            String username = jwtUtils.getUserNameFromJwtToken(jwt);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String username = jwtUtils.getUserNameFromJwtToken(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
 
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-        }
+        authentication.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request));
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 

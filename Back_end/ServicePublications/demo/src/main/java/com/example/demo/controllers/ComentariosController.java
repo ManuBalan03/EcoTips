@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.DTO.ComentarioDTO;
 import com.example.demo.Service.ComentariosService.ComentarioService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

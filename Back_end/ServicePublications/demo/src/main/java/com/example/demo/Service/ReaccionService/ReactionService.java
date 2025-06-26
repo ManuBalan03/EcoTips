@@ -1,15 +1,19 @@
 package com.example.demo.Service.ReaccionService;
 
+import com.example.demo.DTO.NotificationsDTO;
 import com.example.demo.DTO.ReactionsDTO;
 import com.example.demo.Repository.ComentariosRepository;
 import com.example.demo.Repository.PublicationRepository;
 import com.example.demo.Repository.ReactionsRepository;
+import com.example.demo.Service.NotificationsService;
 import com.example.demo.Service.PublicacionService.PublicationsService;
 import com.example.demo.Service.UsuarioService;
 import com.example.demo.models.Enum.TipoReacciones;
 import com.example.demo.models.PublicationsModel;
 import com.example.demo.models.ReactionsModel;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,10 +27,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReactionService implements  ReactionsService{
 
-
+    private final NotificationsService notificationsService;
     private final ReactionsRepository  ReactionRepository;
     private final PublicationRepository publicationsRepository;
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
     public ReactionsDTO crearReaccion(ReactionsDTO dto) {
         // Validación del tipo de reacción
@@ -58,6 +62,18 @@ public class ReactionService implements  ReactionsService{
 
             reaccion.setFechaCreacion(LocalDateTime.now());
             ReactionsModel reaccionGuardada = ReactionRepository.save(reaccion);
+
+            String [] Datos = usuarioService.obtenerNombrePorId(reaccion.getIdUsuario());//obtiene datos del usuario nombre y sun foto de perfil
+
+            Long id= publicationsRepository.findUserIdByPublicationId(dto.getIdPublicacion());
+            notificationsService.enviarNotificacion(
+                    new NotificationsDTO(
+                            "Reaccion",
+                            Datos[0]+" Reacciono a tu Publicacion",
+                            LocalDateTime.now(),
+                            id
+                    )
+            );
 
             return new ReactionsDTO(
                     reaccionGuardada.getIdReaciones(),

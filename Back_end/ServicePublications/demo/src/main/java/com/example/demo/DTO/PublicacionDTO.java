@@ -16,17 +16,19 @@ public class PublicacionDTO {
     private LocalDateTime fechaCreacion;
     private String nombreAutor;
     private String fotoPerfil;
+    private int puntos;
 
 
     public PublicacionDTO() {}
 
     // Constructor parcial si quieres
-    public PublicacionDTO(Long id, String contenido, String titulo, Long idUsuario, String descripcion, LocalDateTime fechaCreacion) {
+    public PublicacionDTO(Long id, String contenido, String titulo, Long idUsuario, String descripcion, LocalDateTime fechaCreacion, int puntos) {
         this.id = id;
         this.contenido = contenido;
         this.titulo = titulo;
         this.idUsuario = idUsuario;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
+        this.puntos= puntos;
     }
 }

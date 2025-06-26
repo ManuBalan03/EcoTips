@@ -33,4 +33,8 @@ public class PublicationsModel {
     private String descripcion;
 
     private Long idUsuario; // Este lo extraeremos del token
+
+
+    @Column(nullable = false)
+    private Integer puntos= 0;
 }

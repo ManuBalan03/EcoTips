@@ -1,5 +1,8 @@
 package com.example.demo.controllers;
+import com.example.demo.DTO.NotificationsDTO;
+import com.example.demo.DTO.UpdateUserDTO;
 import com.example.demo.DTO.UserDTO;
+import com.example.demo.Service.NotificationsService.NotificacionService;
 import com.example.demo.Service.UserService;
 import com.example.demo.models.UserModel;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class userscontroller {
 
+
+        private final NotificacionService notificacionService;
         private final UserService service;
 
         @PostMapping
@@ -37,4 +42,13 @@ public class userscontroller {
                 service.eliminarUsuario(id);
                 return ResponseEntity.noContent().build();
         }
+
+        @PutMapping("/{id}")
+        public ResponseEntity<Void> actualizarpuntos(@PathVariable Long id , @RequestBody UpdateUserDTO dto) {
+                System.out.println("id es "+id+ dto.getPuntosTotales());
+
+                service.sumarPuntosUsuario(id,dto);
+                return ResponseEntity.noContent().build();
+        }
+
 }

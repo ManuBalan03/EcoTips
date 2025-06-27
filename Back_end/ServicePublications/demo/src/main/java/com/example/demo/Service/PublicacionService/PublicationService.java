@@ -6,6 +6,7 @@ import com.example.demo.Repository.PublicationRepository;
 import com.example.demo.Repository.VoteRepository;
 import com.example.demo.Service.NotificationsService;
 import com.example.demo.Service.UsuarioService;
+import org.aspectj.weaver.patterns.IfPointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.models.PublicationsModel;
@@ -159,12 +160,14 @@ public class PublicationService implements PublicationsService {
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + id));
 
         publicacion.setEstado(nuevoEstado);
-        publicacion.setPuntos(10);
+        if (nuevoEstado.equals("APROBADA")){
+            publicacion.setPuntos(10);
+            usuarioService.actualizarUsuarioRemoto(publicacion.getIdUsuario(),
+                    UpdateUserDTO.builder()
+                            .puntosTotales(10)
+                            .build());
+        }
 
-        usuarioService.actualizarUsuarioRemoto(publicacion.getIdUsuario(),
-                UpdateUserDTO.builder()
-                .puntosTotales(10)
-                .build());
 
         PublicationsModel actualizada = repo.save(publicacion);
 

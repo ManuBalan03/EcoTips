@@ -4,7 +4,7 @@ public enum TipoVeredicto {
 
     MODIFICACION("MODIFICACION"),
     RECHAZADA("RECHAZADA"),
-    ACEPTADA("APROBADA");
+    APROBADA("APROBADA");
 
     private final String value;
 

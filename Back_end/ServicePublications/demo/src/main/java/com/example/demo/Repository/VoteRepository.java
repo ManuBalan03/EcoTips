@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface VoteRepository  extends JpaRepository<VotosModel, Long> {
 
     List<VotosModel> findByPublicacionIdPublicacion(Long idPublicacion);
+
+    Optional<VotosModel> findFirstByPublicacionIdPublicacion(Long idPublicacion);
     Optional<VotosModel> findByPublicacionIdPublicacionAndIdUsuario(Long idPublicacion, Long IdUsuario);
 //    @Query("SELECT v.publicacion.idPublicacion FROM VotosModel v WHERE v.idUsuario = :idUsuario")
 //    List<Long> findIdPublicacionesByIdUsuario(Long idUsuario);

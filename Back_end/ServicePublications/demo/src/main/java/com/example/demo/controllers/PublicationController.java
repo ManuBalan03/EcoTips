@@ -39,6 +39,12 @@ public class PublicationController {
         return ResponseEntity.ok(service.listarTodas("APROBADA",null));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PublicacionDTO> obtenerPublicacion(@PathVariable Long id) {
+        return ResponseEntity.ok(service.obtenerPublicacionPorId(id));
+    }
+
+
     @GetMapping("/pendiente")
     public ResponseEntity<List<PublicacionDTO>> listarTodaspendiente( HttpServletRequest request) {
         Long idUsuarioActual = obtenerIdUsuarioDeJWT(request);

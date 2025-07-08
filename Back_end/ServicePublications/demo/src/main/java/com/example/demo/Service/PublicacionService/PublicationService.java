@@ -179,4 +179,18 @@ public class PublicationService implements PublicationsService {
         return resultado;
     }
 
+
+
+
+    @Override
+    public PublicacionDTO obtenerPublicacionPorId(Long idPublicacion) {
+        PublicationsModel publicaciones = repo.findById(idPublicacion)
+                .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
+
+                    PublicacionDTO dto = mapToDTO(publicaciones);
+                    String[] datos = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
+                    dto.setNombreAutor(datos[0]);
+                    dto.setFotoPerfil(datos[1]);
+                    return dto;
+    }
 }

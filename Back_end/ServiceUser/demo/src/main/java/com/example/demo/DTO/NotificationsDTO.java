@@ -25,4 +25,5 @@ public class NotificationsDTO {
     private LocalDateTime fechaEnvio;
     @JsonProperty("usuario")
     private Long usuario;
+    private boolean leido;
 }

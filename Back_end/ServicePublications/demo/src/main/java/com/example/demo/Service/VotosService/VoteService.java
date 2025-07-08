@@ -74,6 +74,7 @@ public class VoteService implements VotesService{
     public List<VotosDTO> listarVotosPorPublicacion(Long idPublicacion) {
         List<VotosModel> Votos = VoteRepository.findByPublicacionIdPublicacion(idPublicacion);
 
+
         return Votos.stream().map(Voto -> new VotosDTO(
                 Voto.getIdVotos(),
                 Voto.getComentario(),
@@ -84,6 +85,25 @@ public class VoteService implements VotesService{
                 usuarioService.obtenerNombrePorId(Voto.getIdUsuario())[0],//nombre
                 usuarioService.obtenerNombrePorId(Voto.getIdUsuario())[1]//foto
         )).toList();
+    }
+
+
+    public VotosDTO listarVotoPorPublicacion(Long idPublicacion) {
+        VotosModel Votos = VoteRepository.findFirstByPublicacionIdPublicacion(idPublicacion)
+                .orElseThrow(() -> new RuntimeException("No se encontró voto para la publicación"));
+
+        String[] datosUser = usuarioService.obtenerNombrePorId(Votos.getIdUsuario());
+
+        return new VotosDTO(
+                Votos.getIdVotos(),
+                Votos.getComentario(),
+                Votos.getVoto().getValue(),
+                Votos.getFechaVoto(),
+                Votos.getIdUsuario(),
+                Votos.getPublicacion().getIdPublicacion(),
+                datosUser[0],
+                datosUser[1]
+        );
     }
 
 

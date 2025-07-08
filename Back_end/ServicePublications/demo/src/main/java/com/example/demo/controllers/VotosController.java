@@ -29,9 +29,14 @@ public class VotosController {
         return ResponseEntity.ok(creada);
     }
 
-    @GetMapping("/publicacion/{id}")
+    @GetMapping("/publicaciones/{id}")
     public ResponseEntity<List<VotosDTO>> obtenerVotosPorPublicacion(@PathVariable Long id) {
         return  ResponseEntity.ok(VotesService.listarVotosPorPublicacion(id));
+    }
+
+    @GetMapping("/publicacion/{id}")
+    public ResponseEntity<VotosDTO> obtenerVotosPorPublicaciones(@PathVariable Long id) {
+        return  ResponseEntity.ok(VotesService.listarVotoPorPublicacion(id));
     }
 
 }

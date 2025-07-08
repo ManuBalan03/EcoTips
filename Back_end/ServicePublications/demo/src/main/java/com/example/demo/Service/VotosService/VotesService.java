@@ -7,4 +7,5 @@ import java.util.List;
 public interface VotesService {
     VotosDTO crearVoto(VotosDTO dto);
     List<VotosDTO> listarVotosPorPublicacion(Long idPublicacion);
+    VotosDTO listarVotoPorPublicacion(Long idPublicacion);
 }

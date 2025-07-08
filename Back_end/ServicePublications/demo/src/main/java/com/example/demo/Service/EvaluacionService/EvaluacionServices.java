@@ -54,7 +54,7 @@ public class EvaluacionServices implements EvaluacionService {
         if (dto.getVeredicto()=="MODIFICACION"){
             notificationsService.enviarNotificacion(
                     new NotificationsDTO(
-                            "Publicacion",
+                            "PublicacionModificacion",
                             "Tu publicaion requiere Modificaciones",
                             LocalDateTime.now(),
                             id
@@ -64,7 +64,7 @@ public class EvaluacionServices implements EvaluacionService {
         else {
             notificationsService.enviarNotificacion(
                     new NotificationsDTO(
-                            "Publicacion",
+                            "Publicacion"+dto.getVeredicto(),
                             "Tu publicaion fue "+dto.getVeredicto(),
                             LocalDateTime.now(),
                             id

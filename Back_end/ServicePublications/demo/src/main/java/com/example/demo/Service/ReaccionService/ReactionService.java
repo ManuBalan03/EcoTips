@@ -71,7 +71,8 @@ public class ReactionService implements  ReactionsService{
                             "Reaccion",
                             Datos[0]+" Reacciono a tu Publicacion",
                             LocalDateTime.now(),
-                            id
+                            id,
+                            dto.getIdPublicacion()
                     )
             );
 

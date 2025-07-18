@@ -55,6 +55,7 @@ public class ComentarioService implements  ComentariosService{
                         Datos[0]+" Comento en tu Publicacion",
                         LocalDateTime.now(),
                         id
+                        ,dto.getIdPublicacion()
                 )
         );
 

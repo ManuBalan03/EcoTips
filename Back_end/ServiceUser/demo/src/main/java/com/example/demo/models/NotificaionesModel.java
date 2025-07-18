@@ -24,6 +24,8 @@ public class NotificaionesModel {
 
     private LocalDateTime fechaEnvio;
 
+    private Long idpublicacion;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private UserModel usuario;

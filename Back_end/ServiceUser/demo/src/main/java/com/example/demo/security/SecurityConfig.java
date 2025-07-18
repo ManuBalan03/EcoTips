@@ -110,7 +110,7 @@ public class SecurityConfig {
                 "http://localhost:8081",  // React Native/Expo (Metro Bundler)
                 "exp://192.168.x.x:8081"  // Para dispositivos en red local (reemplaza x.x con tu IP)
         ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

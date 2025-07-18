@@ -29,6 +29,7 @@ public class NotificacionService {
                 .mensaje(dto.getMensaje())
                 .fechaEnvio(dto.getFechaEnvio())
                 .leido(false)
+                .idpublicacion(dto.getIdPublicacion())
                 .usuario(usuario) // ← ahora sí es un UserModel
                 .build();
 
@@ -40,7 +41,8 @@ public class NotificacionService {
                 guardada.getMensaje(),
                 guardada.getFechaEnvio(),
                 guardada.getUsuario().getIdUsuario(), // ← para regresar el ID
-                guardada.isLeido()
+                guardada.isLeido(),
+                guardada.getIdpublicacion()
         );
     }
 
@@ -59,7 +61,8 @@ public class NotificacionService {
                         n.getMensaje(),
                         n.getFechaEnvio(),
                         n.getUsuario().getIdUsuario(),
-                        n.isLeido()
+                        n.isLeido(),
+                        n.getIdpublicacion()
                 ))
                 .collect(Collectors.toList());
     }

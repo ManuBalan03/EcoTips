@@ -58,7 +58,8 @@ public class PublicationService implements PublicationsService {
                 new NotificationsDTO(
                         "Solicitud Publicacion", "Tu publicacion esta en espera de alta",
                         LocalDateTime.now(),
-                        resultado.getIdUsuario()
+                        resultado.getIdUsuario(),
+                        resultado.getId()
                 )
         );
         return resultado;

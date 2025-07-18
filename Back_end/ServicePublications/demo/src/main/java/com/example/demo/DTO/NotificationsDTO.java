@@ -18,4 +18,5 @@ public class NotificationsDTO {
     private String mensaje;
     private LocalDateTime fechaEnvio;
     private Long usuario;
+    private Long idPublicacion;
 }

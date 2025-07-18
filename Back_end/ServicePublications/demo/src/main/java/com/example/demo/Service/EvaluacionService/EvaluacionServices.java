@@ -57,7 +57,9 @@ public class EvaluacionServices implements EvaluacionService {
                             "PublicacionModificacion",
                             "Tu publicaion requiere Modificaciones",
                             LocalDateTime.now(),
-                            id
+                            id,
+                            dto.getIdpublicacion()
+
                     )
             );
         }
@@ -67,7 +69,8 @@ public class EvaluacionServices implements EvaluacionService {
                             "Publicacion"+dto.getVeredicto(),
                             "Tu publicaion fue "+dto.getVeredicto(),
                             LocalDateTime.now(),
-                            id
+                            id,
+                            dto.getIdpublicacion()
                     )
             );
         }

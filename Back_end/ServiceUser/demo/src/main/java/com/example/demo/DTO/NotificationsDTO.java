@@ -26,4 +26,5 @@ public class NotificationsDTO {
     @JsonProperty("usuario")
     private Long usuario;
     private boolean leido;
+    private Long idPublicacion;
 }

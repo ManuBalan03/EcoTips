@@ -50,5 +50,18 @@ public class userscontroller {
                 service.sumarPuntosUsuario(id,dto);
                 return ResponseEntity.noContent().build();
         }
+        @GetMapping("/puntos/{id}")
+        public ResponseEntity<Integer> obtenerpuntos(@PathVariable Long id ) {
+                service.obtenerpuntos(id);
+                return ResponseEntity.noContent().build();
+        }
+
+        @PutMapping("actualizar/{id}")
+        public ResponseEntity<Void> actualizarUsuario(@PathVariable Long id , @RequestBody UserDTO dto) {
+                service.actualizarUsuario(id,dto);
+                return ResponseEntity.noContent().build();
+        }
+
+
 
 }

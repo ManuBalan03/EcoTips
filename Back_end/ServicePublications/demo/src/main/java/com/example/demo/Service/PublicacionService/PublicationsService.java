@@ -17,4 +17,5 @@ public interface PublicationsService {
     PublicacionDTO actualizarEstadoPublicacion(Long id, String nuevoEstado);
 
     PublicacionDTO obtenerPublicacionPorId(Long idPublicacion);
+
 }

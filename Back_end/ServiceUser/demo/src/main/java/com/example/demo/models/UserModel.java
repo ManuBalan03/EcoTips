@@ -20,6 +20,8 @@ public class UserModel {
     @Column(unique = true, nullable = false)
     private String email;
 
+
+    @Column(name = "telefono")
     private String telefono;
 
     private String contrasenia; // Cifrada

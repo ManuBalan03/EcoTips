@@ -14,6 +14,7 @@ import com.example.demo.DTO.PublicacionDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +39,7 @@ public class PublicationService implements PublicationsService {
     }
     @Override
     public PublicacionDTO crear(PublicacionDTO dto) {
+
         PublicationsModel entidad = mapToEntity(dto);
         entidad.setFechaCreacion(LocalDateTime.now());
         entidad.setEstado("PENDIENTE");
@@ -45,13 +47,7 @@ public class PublicationService implements PublicationsService {
         PublicationsModel guardada = repo.save(entidad);
         PublicacionDTO resultado = mapToDTO(guardada);
         // Aquí inyectas el nombre del
-        String [] Datos= usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
-        String nombreAutor = Datos[0];
-        String foto =Datos[1];
-        resultado.setNombreAutor(nombreAutor);
-        resultado.setFotoPerfil(foto);
-
-
+        resultado= DatosUsuarioDTO(resultado);
 
 
         notificationsService.enviarNotificacion(
@@ -82,26 +78,13 @@ public class PublicationService implements PublicationsService {
                     .collect(Collectors.toList());
         }
 
-        // Convertimos a DTO
         return publicaciones.stream()
-                .map(pub -> {
-                    PublicacionDTO dto = mapToDTO(pub);
-                    String[] datos = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
-                    dto.setNombreAutor(datos[0]);
-                    dto.setFotoPerfil(datos[1]);
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-
-
-    @Override
-    public List<PublicacionDTO> listarPorUsuario(Long idUsuario) {
-        return repo.findByIdUsuario(idUsuario).stream()
                 .map(this::mapToDTO)
+                .map(this::DatosUsuarioDTO)
                 .collect(Collectors.toList());
+
     }
+
 
     @Override
     public Optional<PublicacionDTO> obtenerPorId(Long id) {
@@ -139,21 +122,14 @@ public class PublicationService implements PublicationsService {
         PublicationsModel existente = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + id));
 
-        // Solo actualizamos campos permitidos (contenido, título, descripción)
-        existente.setTitulo(dto.getTitulo());
-        existente.setContenido(dto.getContenido());
-        existente.setDescripcion(dto.getDescripcion());
-
+        updateIfNotEmpty(dto.getTitulo(), existente::setTitulo, existente.getTitulo());
+        updateIfNotEmpty(dto.getContenido(), existente::setContenido, existente.getContenido());
+        updateIfNotEmpty(dto.getDescripcion(), existente::setDescripcion, existente.getDescripcion());
 
         PublicationsModel actualizada = repo.save(existente);
-
-        PublicacionDTO resultado = mapToDTO(actualizada);
-        String[] datos = usuarioService.obtenerNombrePorId(resultado.getIdUsuario());
-        resultado.setNombreAutor(datos[0]);
-        resultado.setFotoPerfil(datos[1]);
-
-        return resultado;
+        return DatosUsuarioDTO(mapToDTO(actualizada));
     }
+
 
     @Override
     public PublicacionDTO actualizarEstadoPublicacion(Long id, String nuevoEstado) {
@@ -194,4 +170,28 @@ public class PublicationService implements PublicationsService {
                     dto.setFotoPerfil(datos[1]);
                     return dto;
     }
+
+    private PublicacionDTO DatosUsuarioDTO(PublicacionDTO dto) {
+        String[] datos = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
+        dto.setNombreAutor(datos[0]);
+        dto.setFotoPerfil(datos[1]);
+        return dto;
+    }
+
+    private void updateIfNotEmpty(String newValue, Consumer<String> setter, String currentValue) {
+        if (newValue != null && !newValue.trim().isEmpty()) {
+            setter.accept(newValue);
+        }
+    }
+
+    @Override
+    public List<PublicacionDTO> listarPorUsuario(Long idUsuario) {
+        return repo.findByIdUsuario(idUsuario).stream()
+                .map(this::mapToDTO)
+                .map(this::DatosUsuarioDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
 }

@@ -4,16 +4,12 @@ import com.example.demo.DTO.UserDTO;
 import com.example.demo.models.UserModel;
 import com.example.demo.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +39,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDTO mapToDTO(UserModel u) {
+        System.out.println("---------------------------");
+        System.out.println(u.getTelefono());
+
+        System.out.println(u.getNombre());
         return new UserDTO(
                 u.getIdUsuario(),
                 u.getNombre(),
@@ -57,8 +57,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO sumarPuntosUsuario(Long idUsuario, UpdateUserDTO dto) {
-        UserModel usuario = repo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+        UserModel usuario = obtenerid(idUsuario);
 
         System.out.println("entroo"+ dto.getPuntosTotales());
         int puntosASumar= dto.getPuntosTotales();
@@ -88,5 +87,43 @@ public class UserServiceImpl implements UserService {
         }
         return usuario;
     }
+
+    public Integer obtenerpuntos (Long id){
+        Optional<UserDTO> datos = obtenerPorId(id);
+        System.out.println("sus");
+        return datos.get().getPuntosTotales();
+    }
+
+    public UserDTO actualizarUsuario(Long idUsuario, UserDTO dto) {
+        UserModel usuario = obtenerid(idUsuario);
+
+        updateIfNotEmpty(dto.getNivel(), usuario::setNivel, usuario.getNivel());
+        updateIfNotEmpty(dto.getEmail(), usuario::setEmail, usuario.getEmail());
+        updateIfNotEmpty(dto.getContraseña(), usuario::setContrasenia, usuario.getContrasenia());
+        updateIfNotEmpty(dto.getNombre(), usuario::setNombre, usuario.getNombre());
+        updateIfNotEmpty(dto.getTelefono(), usuario::setTelefono, usuario.getTelefono());
+        updateIfNotEmpty(dto.getFotoPerfil(), usuario::setFotoPerfil, usuario.getFotoPerfil());
+
+        if (dto.getPuntosTotales() != null) {
+            usuario.setPuntosTotales(dto.getPuntosTotales());
+        }
+
+        UserModel actualizado = repo.save(usuario);
+        return mapToDTO(actualizado);
+    }
+
+
+    public UserModel obtenerid(Long idUsuario){
+        UserModel usuario = repo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+        return usuario;
+    }
+
+    private void updateIfNotEmpty(String newValue, Consumer<String> setter, String currentValue) {
+        if (newValue != null && !newValue.trim().isEmpty()) {
+            setter.accept(newValue);
+        }
+    }
+
 
 }

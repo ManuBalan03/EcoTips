@@ -51,12 +51,9 @@ public class PublicationController {
         return ResponseEntity.ok(service.listarTodas("PENDIENTE", idUsuarioActual));
     }
 
-    @GetMapping("/usuario")
-    public ResponseEntity<List<PublicacionDTO>> listarPropias(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        Long idUsuario = jwtUtils.getUserIdFromToken(token);
-
-        return ResponseEntity.ok(service.listarPorUsuario(idUsuario));
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<List<PublicacionDTO>> listarPropias(@PathVariable Long id) {
+        return ResponseEntity.ok(service.listarPorUsuario(id));
     }
     
     @DeleteMapping("/{id}")
@@ -64,6 +61,8 @@ public class PublicationController {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+
 
     private Long obtenerIdUsuarioDeJWT(HttpServletRequest request) {
         String token = request.getHeader("Authorization");

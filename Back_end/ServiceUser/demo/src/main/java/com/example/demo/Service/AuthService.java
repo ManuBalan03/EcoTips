@@ -5,6 +5,7 @@ import com.example.demo.JTW.JwtUtils;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.models.UserModel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,24 +26,32 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public ResponseEntity<?> register(UserDTO userDTO) {
-        // Verificar si el usuario ya existe
+        // Verificar existencia de manera optimizada
         if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new RuntimeException("El correo electrónico ya está registrado");
+            throw new EmailAlreadyExistsException("El correo electrónico ya está registrado");
         }
 
-        UserModel newUser = new UserModel();
-        newUser.setNombre(userDTO.getNombre());
-        newUser.setEmail(userDTO.getEmail());
-        newUser.setTelefono(userDTO.getTelefono());
-        newUser.setFechaRegistro(LocalDateTime.now());
-        newUser.setContrasenia(passwordEncoder.encode(userDTO.getContraseña()));
-        newUser.setNivel("nivel 0");
-        newUser.setPuntosTotales(0);
+        try {
+            UserModel newUser = UserModel.builder()
+                    .nombre(userDTO.getNombre())
+                    .email(userDTO.getEmail())
+                    .telefono(userDTO.getTelefono())
+                    .fechaRegistro(LocalDateTime.now())
+                    .contrasenia(passwordEncoder.encode(userDTO.getContraseña()))
+                    .nivel("nivel 0")
+                    .puntosTotales(0)
+                    .build();
 
-        userRepository.save(newUser);
+            userRepository.save(newUser);
 
-        return ResponseEntity.ok("Usuario registrado exitosamente");
+            return ResponseEntity.ok("Usuario registrado exitosamente");
+
+        } catch (DataIntegrityViolationException e) {
+            // Manejar caso de concurrencia donde otro hilo registró el mismo email
+            throw new EmailAlreadyExistsException("El correo electrónico ya está registrado");
+        }
     }
+
 
     public String login(LoginDTO loginDTO) {
         Authentication authentication = authenticationManager.authenticate(
@@ -60,4 +69,10 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
     }
+    public class EmailAlreadyExistsException extends RuntimeException {
+        public EmailAlreadyExistsException(String message) {
+            super(message);
+        }
+    }
 }
+

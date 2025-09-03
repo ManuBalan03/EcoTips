@@ -6,10 +6,14 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios", indexes = {
+        @Index(columnList = "email", unique = true, name = "idx_user_email"),
+        @Index(columnList = "id", unique = true, name = "idx_user_username"),
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

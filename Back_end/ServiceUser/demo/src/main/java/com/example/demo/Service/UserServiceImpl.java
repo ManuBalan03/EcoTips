@@ -39,10 +39,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDTO mapToDTO(UserModel u) {
-        System.out.println("---------------------------");
-        System.out.println(u.getTelefono());
-
-        System.out.println(u.getNombre());
         return new UserDTO(
                 u.getIdUsuario(),
                 u.getNombre(),
@@ -59,7 +55,6 @@ public class UserServiceImpl implements UserService {
     public UserDTO sumarPuntosUsuario(Long idUsuario, UpdateUserDTO dto) {
         UserModel usuario = obtenerid(idUsuario);
 
-        System.out.println("entroo"+ dto.getPuntosTotales());
         int puntosASumar= dto.getPuntosTotales();
         int puntosActuales = usuario.getPuntosTotales();
         int puntostotales = puntosActuales+puntosASumar;
@@ -69,7 +64,6 @@ public class UserServiceImpl implements UserService {
             puntostotales=puntostotales-100;
         }
         usuario.setPuntosTotales(puntostotales);
-        System.out.println(usuario.getNivel());
         UserModel actualizado = repo.save(usuario);
 
         return mapToDTO(actualizado);
@@ -78,7 +72,6 @@ public class UserServiceImpl implements UserService {
 
     public UserModel SubirNivel(UserModel usuario ){
         String nivel =usuario.getNivel();
-        System.out.println(usuario.getNivel());
         if (nivel.equals("nivel 0")){
             usuario.setNivel("nivel 1");
         }
@@ -90,7 +83,6 @@ public class UserServiceImpl implements UserService {
 
     public Integer obtenerpuntos (Long id){
         Optional<UserDTO> datos = obtenerPorId(id);
-        System.out.println("sus");
         return datos.get().getPuntosTotales();
     }
 

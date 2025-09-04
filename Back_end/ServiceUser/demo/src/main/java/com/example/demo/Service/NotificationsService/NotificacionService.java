@@ -3,7 +3,7 @@ package com.example.demo.Service.NotificationsService;
 import com.example.demo.DTO.NotificationsDTO;
 import com.example.demo.Repository.NotificationRepository;
 import com.example.demo.Repository.UserRepository;
-import com.example.demo.models.NotificaionesModel;
+import com.example.demo.models.NotificacionesModel;
 import com.example.demo.models.UserModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,16 +24,16 @@ public class NotificacionService {
         UserModel usuario = userRepository.findById(dto.getUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + dto.getUsuario()));
 
-        NotificaionesModel notification = NotificaionesModel.builder()
+        NotificacionesModel notification = NotificacionesModel.builder()
                 .tipo(dto.getTipo())
                 .mensaje(dto.getMensaje())
                 .fechaEnvio(dto.getFechaEnvio())
                 .leido(false)
-                .idpublicacion(dto.getIdPublicacion())
+                .idPublicacion(dto.getIdPublicacion())
                 .usuario(usuario) // ← ahora sí es un UserModel
                 .build();
 
-        NotificaionesModel guardada = notificationRepository.save(notification);
+        NotificacionesModel guardada = notificationRepository.save(notification);
 
         return new NotificationsDTO(
                 guardada.getIdNotificacion(),
@@ -42,7 +42,7 @@ public class NotificacionService {
                 guardada.getFechaEnvio(),
                 guardada.getUsuario().getIdUsuario(), // ← para regresar el ID
                 guardada.isLeido(),
-                guardada.getIdpublicacion()
+                guardada.getIdPublicacion()
         );
     }
 
@@ -51,7 +51,7 @@ public class NotificacionService {
             throw new RuntimeException("Usuario no encontrado con ID: " + idUsuario);
         }
 
-        List<NotificaionesModel> notificaciones = notificationRepository.findByUsuarioIdUsuario(idUsuario);
+        List<NotificacionesModel> notificaciones = notificationRepository.findByUsuarioIdUsuario(idUsuario);
 
         // Convertir a DTOs
         return notificaciones.stream()
@@ -62,13 +62,13 @@ public class NotificacionService {
                         n.getFechaEnvio(),
                         n.getUsuario().getIdUsuario(),
                         n.isLeido(),
-                        n.getIdpublicacion()
+                        n.getIdPublicacion()
                 ))
                 .collect(Collectors.toList());
     }
 
     public void marcarComoLeida(Long idNotificacion) {
-        NotificaionesModel notificacion = notificationRepository.findById(idNotificacion)
+        NotificacionesModel notificacion = notificationRepository.findById(idNotificacion)
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
 
         notificacion.setLeido(true);

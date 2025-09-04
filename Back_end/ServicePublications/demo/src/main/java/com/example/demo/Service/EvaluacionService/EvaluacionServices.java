@@ -66,8 +66,8 @@ public class EvaluacionServices implements EvaluacionService {
         else {
             notificationsService.enviarNotificacion(
                     new NotificationsDTO(
-                            "Publicacion"+dto.getVeredicto(),
-                            "Tu publicaion fue "+dto.getVeredicto(),
+                            "Publicacion_"+dto.getVeredicto(),
+                            "Tu publicacion fue "+dto.getVeredicto(),
                             LocalDateTime.now(),
                             id,
                             dto.getIdpublicacion()

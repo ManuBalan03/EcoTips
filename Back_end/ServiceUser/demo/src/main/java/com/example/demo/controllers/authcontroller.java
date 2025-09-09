@@ -43,7 +43,8 @@ public class authcontroller {
                 user.getEmail(),
                 user.getFotoPerfil(),
                 user.getPuntosTotales(),
-                user.getNivel()
+                user.getNivel(),
+                user.getTelefono()
         );
 
         return ResponseEntity.ok(new AuthResponse(token, userDTO));

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
         @Index(columnList = "id_publicacion", name = "idx_notificaciones_publicacion"),
         @Index(columnList = "id_usuario", name = "idx_notificaciones_usuario"),
         @Index(columnList = "leido", name = "idx_notificaciones_leido"), // Útil para filtrar por estado
-        @Index(columnList = "fecha_envio", name = "idx_notificaciones_fecha")
+        @Index(columnList = "fecha_envio", name = "idx_notificaciones_fecha"),
+        @Index(columnList = "tipo", name = "idx_notificaciones_tipo")
 })
 @Data
 @Builder

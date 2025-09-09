@@ -12,4 +12,5 @@ public class UserBasicDTO {
     private String fotoPerfil;
     private Integer puntosTotales;
     private String nivel;
+    private String telefono;
 }

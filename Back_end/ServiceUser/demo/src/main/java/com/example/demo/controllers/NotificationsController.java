@@ -75,6 +75,9 @@ public class NotificationsController {
         return ResponseEntity.ok(notificaciones);
     }
 
+
+
+
     // ✅ Contador de notificaciones no leídas (para badge)
     @GetMapping("/usuario/{idUsuario}/contador-no-leidas")
     public ResponseEntity<Map<String, Long>> contarNoLeidas(@PathVariable Long idUsuario) {

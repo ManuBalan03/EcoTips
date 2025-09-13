@@ -1,4 +1,5 @@
 package com.example.demo.Service;
+import com.example.demo.DTO.CreateUserDTO;
 import com.example.demo.DTO.LoginDTO;
 import com.example.demo.DTO.UserDTO;
 import com.example.demo.JTW.JwtUtils;
@@ -25,7 +26,7 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    public ResponseEntity<?> register(UserDTO userDTO) {
+    public ResponseEntity<?> register(CreateUserDTO userDTO) {
         // Verificar existencia de manera optimizada
         if (userRepository.existsByEmail(userDTO.getEmail())) {
             throw new EmailAlreadyExistsException("El correo electrónico ya está registrado");

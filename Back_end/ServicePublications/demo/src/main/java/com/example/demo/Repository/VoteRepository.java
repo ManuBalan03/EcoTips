@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface VoteRepository  extends JpaRepository<VotosModel, Long> {
 
@@ -22,6 +23,13 @@ boolean existsByPublicacionIdPublicacionAndIdUsuario(Long idPublicacion, Long id
 
     @Query("SELECT COUNT(v) FROM VotosModel v WHERE v.publicacion.idPublicacion = :idPublicacion")
     long contarVotosPorPublicacion(@Param("idPublicacion") Long idPublicacion);
+
+    // ✅ Consulta optimizada para batch
+    @Query("SELECT v.publicacion.idPublicacion FROM VoteModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.idPublicacion IN :publicacionIds")
+    Set<Long> findVotedPublicationIds(@Param("usuarioId") Long usuarioId, @Param("publicacionIds") List<Long> publicacionIds);
+
+    @Query("SELECT v FROM VoteModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.estado = 'APROBADA'")
+    List<VotosModel> findVotesByUsuario(@Param("usuarioId") Long usuarioId);
 
 
 }

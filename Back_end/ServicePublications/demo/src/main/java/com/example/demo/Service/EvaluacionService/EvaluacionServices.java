@@ -14,13 +14,20 @@ import com.example.demo.models.Enum.TipoVeredicto;
 import com.example.demo.models.EvaluacionModel;
 import com.example.demo.models.PublicationsModel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class EvaluacionServices implements EvaluacionService {
     private final PublicationRepository publicationsRepository;
@@ -28,91 +35,174 @@ public class EvaluacionServices implements EvaluacionService {
     private final UsuarioService usuarioService;
     private final NotificationsService notificationsService;
     private final PublicationService publicationService;
-    private final VoteRepository VoteRepository;
-    private final PublicationRepository publicationRepository;
+    private final VoteRepository voteRepository;
 
+    @Override
+    @Transactional
     public EvaluacionDTO crearEvaluacion(EvaluacionDTO dto) {
+        // ✅ Validación temprana
+        if (dto.getIdpublicacion() == null) {
+            throw new RuntimeException("ID de publicación es requerido");
+        }
+
+        // ✅ Obtener publicación con validación
         PublicationsModel publicacion = publicationsRepository.findById(dto.getIdpublicacion())
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada con ID: " + dto.getIdpublicacion()));
 
-
+        // ✅ Convertir veredicto
         TipoVeredicto tipo = TipoVeredicto.fromString(dto.getVeredicto());
 
+        // ✅ Guardar evaluación
+        EvaluacionModel evaluacion = EvaluacionModel.builder()
+                .veredicto(tipo)
+                .comentario_final(dto.getComentario_final())
+                .fecha_evaluacion(LocalDateTime.now())
+                .publicacion(publicacion)
+                .idUsuario(dto.getIdUsuario())
+                .build();
 
-        EvaluacionModel EvaluacionGuardado = evaluacionRepository.save(
-                EvaluacionModel.builder()
-                        .veredicto(tipo)
-                        .comentario_final(dto.getComentario_final())
-                        .fecha_evaluacion(LocalDateTime.now())
-                        .publicacion(publicacion)
-                        .idUsuario(dto.getIdUsuario())
-                        .build()
-        );
-        String [] Datos = usuarioService.obtenerNombrePorId(EvaluacionGuardado.getIdUsuario());//obtiene datos del usuario nombre y sun foto de perfil
+        EvaluacionModel evaluacionGuardada = evaluacionRepository.save(evaluacion);
 
-        Long id= publicationsRepository.findUserIdByPublicationId(dto.getIdpublicacion());
-        if (dto.getVeredicto()=="MODIFICACION"){
-            notificationsService.enviarNotificacion(
-                    new NotificationsDTO(
-                            "PublicacionModificacion",
-                            "Tu publicaion requiere Modificaciones",
-                            LocalDateTime.now(),
-                            id,
-                            dto.getIdpublicacion()
+        // ✅ Procesamiento asíncrono para mejor performance
+        procesarEvaluacionAsync(evaluacionGuardada, dto.getVeredicto());
 
-                    )
-            );
-        }
-        else {
-            notificationsService.enviarNotificacion(
-                    new NotificationsDTO(
-                            "Publicacion_"+dto.getVeredicto(),
-                            "Tu publicacion fue "+dto.getVeredicto(),
-                            LocalDateTime.now(),
-                            id,
-                            dto.getIdpublicacion()
-                    )
-            );
-        }
-
-        publicationService.actualizarEstadoPublicacion(dto.getIdpublicacion(), dto.getVeredicto());
+        // ✅ Obtener datos del usuario evaluador
+        String[] datosUsuario = usuarioService.obtenerNombrePorId(evaluacionGuardada.getIdUsuario());
 
         return EvaluacionDTO.builder()
+                .idEvaluacion(evaluacionGuardada.getIdEvaluacion())
                 .veredicto(dto.getVeredicto())
                 .comentario_final(dto.getComentario_final())
-                .fecha_evaluacion(dto.getFecha_evaluacion())
+                .fecha_evaluacion(evaluacionGuardada.getFecha_evaluacion())
                 .idpublicacion(dto.getIdpublicacion())
                 .idUsuario(dto.getIdUsuario())
-                .nombreAutor(Datos[0])
-                .fotoPerfil(Datos[1])
+                .nombreAutor(datosUsuario[0])
+                .fotoPerfil(datosUsuario[1])
                 .build();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PublicacionDTO> listarTodas(String estado, Long idUsuarioActual) {
-        // 1. Obtener publicaciones en estado PENDIENTE
-        List<PublicationsModel> publicaciones = publicationRepository.findByEstadoOrderByFechaCreacionDesc(estado);
+        // ✅ Consulta optimizada: obtener publicaciones con mínimo de votos directamente desde BD
+        List<PublicationsModel> publicaciones = publicationsRepository.findByEstadoWithMinVotes(estado, 3);
 
-        // 2. Filtrar: que el usuario no haya votado y tengan más de 5 votos
-        List<PublicationsModel> filtradas = publicaciones.stream()
-                .filter(pub -> {
+        // ✅ Batch processing para datos de usuario
+        Map<Long, String[]> datosUsuarios = obtenerDatosUsuariosBatch(
+                publicaciones.stream()
+                        .map(PublicationsModel::getIdUsuario)
+                        .distinct()
+                        .collect(Collectors.toList())
+        );
 
-                    long cantidadVotos = VoteRepository.contarVotosPorPublicacion(pub.getIdPublicacion());
-                    return cantidadVotos >= 3;
-                })
-                .collect(Collectors.toList());
-
-        // 3. Convertimos a DTO
-        return filtradas.stream()
+        // ✅ Mapeo eficiente
+        return publicaciones.stream()
                 .map(pub -> {
                     PublicacionDTO dto = publicationService.mapToDTO(pub);
-                    String[] datos = usuarioService.obtenerNombrePorId(dto.getIdUsuario());
-                    dto.setNombreAutor(datos[0]);
-                    dto.setFotoPerfil(datos[1]);
+                    String[] datos = datosUsuarios.get(pub.getIdUsuario());
+                    if (datos != null) {
+                        dto.setNombreAutor(datos[0]);
+                        dto.setFotoPerfil(datos[1]);
+                    }
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
 
+    // ✅ Métodos privados optimizados
+    @Async
+    protected void procesarEvaluacionAsync(EvaluacionModel evaluacion, String veredicto) {
+        try {
+            // ✅ Obtener ID del autor de la publicación
+            Long autorId = publicationsRepository.findUserIdByPublicationId(evaluacion.getPublicacion().getIdPublicacion());
 
+            // ✅ Enviar notificación
+            String tipoNotificacion = "MODIFICACION".equals(veredicto) ?
+                    "PublicacionModificacion" : "Publicacion_" + veredicto;
+
+            String mensaje = "MODIFICACION".equals(veredicto) ?
+                    "Tu publicación requiere Modificaciones" :
+                    "Tu publicación fue " + veredicto;
+
+            notificationsService.enviarNotificacion(
+                    new NotificationsDTO(
+                            tipoNotificacion,
+                            mensaje,
+                            LocalDateTime.now(),
+                            autorId,
+                            evaluacion.getPublicacion().getIdPublicacion()
+                    )
+            );
+
+            // ✅ Actualizar estado de la publicación
+            publicationService.actualizarEstadoPublicacion(
+                    evaluacion.getPublicacion().getIdPublicacion(),
+                    veredicto
+            );
+
+        } catch (Exception e) {
+            // ✅ Log del error sin afectar la operación principal
+            System.err.println("Error en procesamiento asíncrono: " + e.getMessage());
+        }
+    }
+
+    private Map<Long, String[]> obtenerDatosUsuariosBatch(List<Long> idsUsuarios) {
+        Map<Long, String[]> resultados = new HashMap<>();
+        for (Long id : idsUsuarios) {
+            try {
+                resultados.put(id, usuarioService.obtenerNombrePorId(id));
+            } catch (Exception e) {
+                resultados.put(id, new String[]{"Usuario", "default_avatar.jpg"});
+            }
+        }
+        return resultados;
+    }
+
+    // ✅ Métodos adicionales para mejor funcionalidad
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PublicacionDTO> listarTodasPaginadas(String estado, Long idUsuarioActual, Pageable pageable) {
+        Page<PublicationsModel> publicacionesPage = publicationsRepository.findByEstadoWithMinVotesPaginado(estado, 3, pageable);
+
+        // ✅ Batch processing para datos de usuario
+        Map<Long, String[]> datosUsuarios = obtenerDatosUsuariosBatch(
+                publicacionesPage.getContent().stream()
+                        .map(PublicationsModel::getIdUsuario)
+                        .distinct()
+                        .collect(Collectors.toList())
+        );
+
+        return publicacionesPage.map(pub -> {
+            PublicacionDTO dto = publicationService.mapToDTO(pub);
+            String[] datos = datosUsuarios.get(pub.getIdUsuario());
+            if (datos != null) {
+                dto.setNombreAutor(datos[0]);
+                dto.setFotoPerfil(datos[1]);
+            }
+            return dto;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EvaluacionDTO> obtenerEvaluacionesPorPublicacion(Long idPublicacion) {
+        return evaluacionRepository.findByPublicacionIdPublicacion(idPublicacion).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private EvaluacionDTO mapToDTO(EvaluacionModel evaluacion) {
+        String[] datosUsuario = usuarioService.obtenerNombrePorId(evaluacion.getIdUsuario());
+
+        return EvaluacionDTO.builder()
+                .idEvaluacion(evaluacion.getIdEvaluacion())
+                .veredicto(evaluacion.getVeredicto().toString())
+                .comentario_final(evaluacion.getComentario_final())
+                .fecha_evaluacion(evaluacion.getFecha_evaluacion())
+                .idpublicacion(evaluacion.getPublicacion().getIdPublicacion())
+                .idUsuario(evaluacion.getIdUsuario())
+                .nombreAutor(datosUsuario[0])
+                .fotoPerfil(datosUsuario[1])
+                .build();
+    }
 }

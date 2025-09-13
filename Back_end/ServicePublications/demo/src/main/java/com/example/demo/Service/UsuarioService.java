@@ -2,7 +2,7 @@ package com.example.demo.Service;
 
 import com.example.demo.DTO.UpdateUserDTO;
 import com.example.demo.DTO.UserDTO;
-;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;

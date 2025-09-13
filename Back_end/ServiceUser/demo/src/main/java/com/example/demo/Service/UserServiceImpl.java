@@ -4,7 +4,12 @@ import com.example.demo.DTO.UserDTO;
 import com.example.demo.models.UserModel;
 import com.example.demo.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,29 +18,128 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository repo;
 
-
-
     @Override
+    @Transactional
     public UserModel crearUsuario(UserModel usuario) {
         return repo.save(usuario);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<UserDTO> obtenerTodosPaginados(Pageable pageable) {
+        return repo.findAll(pageable).map(this::mapToDTO);
+    }
+
+    // ✅ Mantener para compatibilidad (pero con límite)
+    @Override
+    @Transactional(readOnly = true)
     public List<UserDTO> obtenerTodos() {
-        return repo.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+        return repo.findAll(PageRequest.of(0, 100)) // Límite de 100 registros
+                .map(this::mapToDTO)
+                .getContent();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<UserDTO> obtenerPorId(Long id) {
-        return repo.findById(id).map(this::mapToDTO);
+        return repo.findUserDTOById(id); // ✅ Usar proyección
     }
 
     @Override
+    @Transactional
     public void eliminarUsuario(Long id) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado con ID: " + id);
+        }
         repo.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO sumarPuntosUsuario(Long idUsuario, UpdateUserDTO dto) {
+        int puntosASumar = dto.getPuntosTotales();
+
+        // ✅ Actualización directa en BD
+        repo.sumarPuntos(idUsuario, puntosASumar);
+
+        // ✅ Obtener usuario actualizado
+        UserModel usuario = obtenerUsuarioEntity(idUsuario);
+        int nuevosPuntos = usuario.getPuntosTotales();
+
+        // ✅ Verificar niveles
+        while (nuevosPuntos >= 100) {
+            String nuevoNivel = calcularNivelSuperior(usuario.getNivel());
+            repo.actualizarNivel(idUsuario, nuevoNivel);
+            repo.restarPuntos(idUsuario, 100);
+            nuevosPuntos -= 100;
+            usuario.setNivel(nuevoNivel);
+        }
+
+        usuario.setPuntosTotales(nuevosPuntos);
+        return mapToDTO(usuario);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO actualizarUsuario(Long idUsuario, UserDTO dto) {
+        UserModel usuario = obtenerUsuarioEntity(idUsuario);
+        boolean needsUpdate = false;
+
+        // ✅ Validar email único
+        if (dto.getEmail() != null && !dto.getEmail().equals(usuario.getEmail())) {
+            if (repo.existsByEmail(dto.getEmail())) {
+                throw new RuntimeException("El email ya está en uso");
+            }
+            usuario.setEmail(dto.getEmail());
+            needsUpdate = true;
+        }
+
+        // ✅ Actualizar solo campos modificados
+        needsUpdate = updateIfDifferent(dto.getNombre(), usuario.getNombre(), usuario::setNombre) || needsUpdate;
+        needsUpdate = updateIfDifferent(dto.getTelefono(), usuario.getTelefono(), usuario::setTelefono) || needsUpdate;
+        needsUpdate = updateIfDifferent(dto.getFotoPerfil(), usuario.getFotoPerfil(), usuario::setFotoPerfil) || needsUpdate;
+        needsUpdate = updateIfDifferent(dto.getNivel(), usuario.getNivel(), usuario::setNivel) || needsUpdate;
+//
+//        // ✅ Contraseña (solo si se proporciona y es diferente)
+//        if (dto.getContraseña() != null && !dto.getContraseña().trim().isEmpty()) {
+//            usuario.setContrasenia(dto.getContraseña()); // Deberías encriptarla aquí
+//            needsUpdate = true;
+//        }
+
+        // ✅ Puntos
+        if (dto.getPuntosTotales() != null && !dto.getPuntosTotales().equals(usuario.getPuntosTotales())) {
+            usuario.setPuntosTotales(dto.getPuntosTotales());
+            needsUpdate = true;
+        }
+
+        return needsUpdate ? mapToDTO(repo.save(usuario)) : mapToDTO(usuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer obtenerPuntos(Long id) {
+        return repo.findPuntosTotalesById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    // ✅ Métodos auxiliares optimizados
+    private UserModel obtenerUsuarioEntity(Long idUsuario) {
+        return repo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
+    }
+
+    private String calcularNivelSuperior(String nivelActual) {
+        return switch (nivelActual) {
+            case "nivel 0" -> "nivel 1";
+            case "nivel 1" -> "nivel 2";
+            case "nivel 2" -> "nivel 3";
+            case "nivel 3" -> "nivel 4";
+            default -> nivelActual;
+        };
     }
 
     private UserDTO mapToDTO(UserModel u) {
@@ -46,76 +150,42 @@ public class UserServiceImpl implements UserService {
                 u.getTelefono(),
                 u.getFotoPerfil(),
                 u.getNivel(),
-                u.getPuntosTotales(),
-                u.getContrasenia()
-        );
+                u.getPuntosTotales());
+    }
+
+    private boolean updateIfDifferent(String newValue, String currentValue, Consumer<String> setter) {
+        if (newValue != null && !newValue.trim().isEmpty() && !newValue.equals(currentValue)) {
+            setter.accept(newValue);
+            return true;
+        }
+        return false;
+    }
+
+    // ✅ Métodos adicionales para optimización
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeUsuario(Long id) {
+        return repo.existsById(id);
     }
 
     @Override
-    public UserDTO sumarPuntosUsuario(Long idUsuario, UpdateUserDTO dto) {
-        UserModel usuario = obtenerid(idUsuario);
-
-        int puntosASumar= dto.getPuntosTotales();
-        int puntosActuales = usuario.getPuntosTotales();
-        int puntostotales = puntosActuales+puntosASumar;
-
-        if (puntostotales>=100){
-            usuario= SubirNivel(usuario);
-            puntostotales=puntostotales-100;
-        }
-        usuario.setPuntosTotales(puntostotales);
-        UserModel actualizado = repo.save(usuario);
-
-        return mapToDTO(actualizado);
+    @Transactional(readOnly = true)
+    public Optional<UserDTO> obtenerPorEmail(String email) {
+        return repo.findByEmail(email).map(this::mapToDTO);
     }
 
-
-    public UserModel SubirNivel(UserModel usuario ){
-        String nivel =usuario.getNivel();
-        if (nivel.equals("nivel 0")){
-            usuario.setNivel("nivel 1");
-        }
-        if (nivel.equals("nivel 1")){
-            usuario.setNivel("nivel 2");
-        }
-        return usuario;
-    }
-
-    public Integer obtenerpuntos (Long id){
-        Optional<UserDTO> datos = obtenerPorId(id);
-        return datos.get().getPuntosTotales();
-    }
-
-    public UserDTO actualizarUsuario(Long idUsuario, UserDTO dto) {
-        UserModel usuario = obtenerid(idUsuario);
-
-        updateIfNotEmpty(dto.getNivel(), usuario::setNivel, usuario.getNivel());
-        updateIfNotEmpty(dto.getEmail(), usuario::setEmail, usuario.getEmail());
-        updateIfNotEmpty(dto.getContraseña(), usuario::setContrasenia, usuario.getContrasenia());
-        updateIfNotEmpty(dto.getNombre(), usuario::setNombre, usuario.getNombre());
-        updateIfNotEmpty(dto.getTelefono(), usuario::setTelefono, usuario.getTelefono());
-        updateIfNotEmpty(dto.getFotoPerfil(), usuario::setFotoPerfil, usuario.getFotoPerfil());
+    @Override
+    @Transactional
+    public UserDTO actualizarParcial(Long id, UpdateUserDTO dto) {
+        UserModel usuario = obtenerUsuarioEntity(id);
 
         if (dto.getPuntosTotales() != null) {
             usuario.setPuntosTotales(dto.getPuntosTotales());
         }
-
-        UserModel actualizado = repo.save(usuario);
-        return mapToDTO(actualizado);
-    }
-
-
-    public UserModel obtenerid(Long idUsuario){
-        UserModel usuario = repo.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
-        return usuario;
-    }
-
-    private void updateIfNotEmpty(String newValue, Consumer<String> setter, String currentValue) {
-        if (newValue != null && !newValue.trim().isEmpty()) {
-            setter.accept(newValue);
+        if (dto.getNivel() != null) {
+            usuario.setNivel(dto.getNivel());
         }
+
+        return mapToDTO(repo.save(usuario));
     }
-
-
 }

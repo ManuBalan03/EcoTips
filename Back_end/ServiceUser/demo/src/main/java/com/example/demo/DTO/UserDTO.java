@@ -4,7 +4,7 @@ import lombok.*;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class UserDTO {
     private Long idUsuario;
     private String nombre;
@@ -13,6 +13,17 @@ public class UserDTO {
     private String fotoPerfil;
     private String nivel;
     private Integer puntosTotales;
-    private String contraseña;
+
+    public UserDTO(Long idUsuario, String nombre, String email, String telefono,
+                   String fotoPerfil, String nivel, Integer puntosTotales) {
+        this.idUsuario = idUsuario;
+        this.nombre = nombre;
+        this.email = email;
+        this.telefono = telefono;
+        this.fotoPerfil = fotoPerfil;
+        this.nivel = nivel;
+        this.puntosTotales = puntosTotales;
+    }
+
 }
 //json para registrar

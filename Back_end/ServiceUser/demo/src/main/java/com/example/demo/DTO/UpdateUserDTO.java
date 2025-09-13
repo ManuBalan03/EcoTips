@@ -11,7 +11,16 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdateUserDTO {
 
-        private int puntosTotales;
-        // otros campos si los necesitas
+        private Integer puntosTotales;
+        private String nivel;
+
+        // Validación
+        public boolean hasPuntos() {
+                return puntosTotales != null;
+        }
+
+        public boolean hasNivel() {
+                return nivel != null && !nivel.trim().isEmpty();
+        }
 
 }

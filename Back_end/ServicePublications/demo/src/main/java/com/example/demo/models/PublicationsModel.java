@@ -35,6 +35,7 @@ public class PublicationsModel {
     private Long idUsuario; // Este lo extraeremos del token
 
 
+    @Builder.Default
     @Column(nullable = false)
-    private Integer puntos= 0;
+    private Integer puntos = 0;
 }

@@ -1,9 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.DTO.AuthResponse;
-import com.example.demo.DTO.LoginDTO;
-import com.example.demo.DTO.UserBasicDTO;
-import com.example.demo.DTO.UserDTO;
+import com.example.demo.DTO.*;
 import com.example.demo.JTW.JtwResponse;
 import com.example.demo.Service.AuthService;
 import com.example.demo.models.UserModel;
@@ -24,7 +21,7 @@ public class authcontroller {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> registerUser(@RequestBody CreateUserDTO userDTO) {
         try {
             return authService.register(userDTO);
         } catch (RuntimeException e) {
@@ -37,14 +34,14 @@ public class authcontroller {
         String token = authService.login(loginDTO);
         UserModel user = authService.obtenerUsuarioPorEmail(loginDTO.getEmail());
 
-        UserBasicDTO userDTO = new UserBasicDTO(
+         UserDTO userDTO = new UserDTO(
                 user.getIdUsuario(),
                 user.getNombre(),
                 user.getEmail(),
-                user.getFotoPerfil(),
-                user.getPuntosTotales(),
+                 user.getTelefono(),
+                 user.getFotoPerfil(),
                 user.getNivel(),
-                user.getTelefono()
+                 user.getPuntosTotales()
         );
 
         return ResponseEntity.ok(new AuthResponse(token, userDTO));

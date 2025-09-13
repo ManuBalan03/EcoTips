@@ -8,35 +8,65 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/publicaciones")
 @RequiredArgsConstructor
 public class PublicationController {
-
     private final PublicationsService service;
-    private final JwtUltis jwtUtils; // Necesario para extraer userId del token
-    private final VotesService VotesService;
+    private final JwtUltis jwtUtils;
+    private final VotesService votesService;
 
     @PostMapping
-    public ResponseEntity<PublicacionDTO> crear(@RequestHeader("Authorization") String authHeader,
-                                                @RequestBody PublicacionDTO dto) {
-        String token = authHeader.replace("Bearer ", "");
-        Long idUsuario = jwtUtils.getUserIdFromToken(token);
-        dto.setIdUsuario(idUsuario);
+    public ResponseEntity<PublicacionDTO> crear(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody PublicacionDTO dto) {
 
+        Long idUsuario = jwtUtils.getUserIdFromToken(authHeader.replace("Bearer ", ""));
+        dto.setIdUsuario(idUsuario);
 
         return ResponseEntity.ok(service.crear(dto));
     }
 
+    // ✅ Endpoint principal con paginación y filtros
     @GetMapping
-    public ResponseEntity<List<PublicacionDTO>> listarTodas() {
-        Long dato= null;
-        return ResponseEntity.ok(service.listarTodas("APROBADA",null));
+    public ResponseEntity<Page<PublicacionDTO>> listarTodas(
+            @RequestParam(defaultValue = "APROBADA") String estado,
+            @RequestParam(required = false) Long usuarioActual,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
+        // Obtener ID del usuario actual si no se proporciona
+        if (usuarioActual == null) {
+            usuarioActual = obtenerIdUsuarioDeJWT(request);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Page<PublicacionDTO> publicaciones = service.listarTodasPaginadas(estado, usuarioActual, pageable);
+
+        return ResponseEntity.ok(publicaciones);
+    }
+
+    // ✅ Endpoint para compatibilidad (mantiene el comportamiento antiguo)
+    @GetMapping("/todas")
+    public ResponseEntity<List<PublicacionDTO>> listarTodasSinPaginacion(
+            @RequestParam(defaultValue = "APROBADA") String estado,
+            HttpServletRequest request) {
+
+        Long usuarioActual = obtenerIdUsuarioDeJWT(request);
+        List<PublicacionDTO> publicaciones = service.listarTodas(estado, usuarioActual);
+
+        return ResponseEntity.ok(publicaciones);
     }
 
     @GetMapping("/{id}")
@@ -44,47 +74,111 @@ public class PublicationController {
         return ResponseEntity.ok(service.obtenerPublicacionPorId(id));
     }
 
+    // ✅ Endpoint paginado para publicaciones pendientes
+    @GetMapping("/pendientes")
+    public ResponseEntity<Page<PublicacionDTO>> listarPendientesPaginadas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
 
-    @GetMapping("/pendiente")
-    public ResponseEntity<List<PublicacionDTO>> listarTodaspendiente( HttpServletRequest request) {
         Long idUsuarioActual = obtenerIdUsuarioDeJWT(request);
-        return ResponseEntity.ok(service.listarTodas("PENDIENTE", idUsuarioActual));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Page<PublicacionDTO> publicaciones = service.listarTodasPaginadas("PENDIENTE", idUsuarioActual, pageable);
+
+        return ResponseEntity.ok(publicaciones);
     }
 
-    @GetMapping("/usuario/{id}")
-    public ResponseEntity<List<PublicacionDTO>> listarPropias(@PathVariable Long id) {
-        return ResponseEntity.ok(service.listarPorUsuario(id));
+    // ✅ Mantener para compatibilidad
+    @GetMapping("/pendiente")
+    public ResponseEntity<List<PublicacionDTO>> listarPendientes(HttpServletRequest request) {
+        Long idUsuarioActual = obtenerIdUsuarioDeJWT(request);
+        List<PublicacionDTO> publicaciones = service.listarTodas("PENDIENTE", idUsuarioActual);
+
+        return ResponseEntity.ok(publicaciones);
     }
-    
+
+    // ✅ Endpoint paginado para publicaciones de usuario
+    @GetMapping("/usuario/{idUsuario}")
+    public ResponseEntity<Page<PublicacionDTO>> listarPorUsuarioPaginadas(
+            @PathVariable Long idUsuario,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String estado) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Page<PublicacionDTO> publicaciones;
+
+        if (estado != null) {
+            publicaciones = service.listarPorUsuarioYEstadoPaginado(idUsuario, estado, pageable);
+        } else {
+            publicaciones = service.listarPorUsuarioPaginado(idUsuario, pageable);
+        }
+
+        return ResponseEntity.ok(publicaciones);
+    }
+
+    // ✅ Mantener para compatibilidad
+    @GetMapping("/usuario/{idUsuario}/todas")
+    public ResponseEntity<List<PublicacionDTO>> listarPorUsuario(
+            @PathVariable Long idUsuario,
+            @RequestParam(required = false) String estado) {
+
+        List<PublicacionDTO> publicaciones;
+        if (estado != null) {
+            publicaciones = service.listarPorUsuarioYEstado(idUsuario, estado);
+        } else {
+            publicaciones = service.listarPorUsuario(idUsuario);
+        }
+
+        return ResponseEntity.ok(publicaciones);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
+    // ✅ Nuevo endpoint para actualizar estado
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<PublicacionDTO> actualizarEstado(
+            @PathVariable Long id,
+            @RequestParam String nuevoEstado) {
 
+        PublicacionDTO actualizada = service.actualizarEstadoPublicacion(id, nuevoEstado);
+        return ResponseEntity.ok(actualizada);
+    }
 
+    // ✅ Nuevo endpoint para actualizar publicación
+    @PutMapping("/{id}")
+    public ResponseEntity<PublicacionDTO> actualizarPublicacion(
+            @PathVariable Long id,
+            @RequestBody PublicacionDTO dto) {
+
+        PublicacionDTO actualizada = service.actualizarPublicacion(id, dto);
+        return ResponseEntity.ok(actualizada);
+    }
+
+    // ✅ Nuevo endpoint para estadísticas
+    @GetMapping("/usuario/{idUsuario}/estadisticas")
+    public ResponseEntity<Map<String, Object>> obtenerEstadisticas(@PathVariable Long idUsuario) {
+        Map<String, Object> estadisticas = service.obtenerEstadisticasUsuario(idUsuario);
+        return ResponseEntity.ok(estadisticas);
+    }
+
+    // ✅ Método optimizado para obtener ID de usuario
     private Long obtenerIdUsuarioDeJWT(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
-                // Usar una clave secreta válida (sin caracteres especiales)
-                String secretKey = "ecoTipsClaveSuperSeguraYlarga20030409"; // Al menos 32 caracteres
-
-                Claims claims = Jwts.parser()
-                        .setSigningKey(secretKey.getBytes()) // Convertir a bytes
-                        .parseClaimsJws(token)
-                        .getBody();
-
-                return claims.get("userId", Long.class);
-
+                String token = authHeader.substring(7);
+                return jwtUtils.getUserIdFromToken(token);
             } catch (Exception e) {
-                throw new RuntimeException("Error al decodificar el token: " + e.getMessage());
+                // Si falla el JwtUtils, retornar null para que el service maneje publicaciones sin filtro de usuario
+                return null;
             }
         }
-        throw new RuntimeException("Token no encontrado");
+        return null;
     }
 }
 

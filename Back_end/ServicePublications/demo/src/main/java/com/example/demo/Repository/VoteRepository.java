@@ -25,10 +25,10 @@ boolean existsByPublicacionIdPublicacionAndIdUsuario(Long idPublicacion, Long id
     long contarVotosPorPublicacion(@Param("idPublicacion") Long idPublicacion);
 
     // ✅ Consulta optimizada para batch
-    @Query("SELECT v.publicacion.idPublicacion FROM VoteModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.idPublicacion IN :publicacionIds")
+    @Query("SELECT v.publicacion.idPublicacion FROM VotosModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.idPublicacion IN :publicacionIds")
     Set<Long> findVotedPublicationIds(@Param("usuarioId") Long usuarioId, @Param("publicacionIds") List<Long> publicacionIds);
 
-    @Query("SELECT v FROM VoteModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.estado = 'APROBADA'")
+    @Query("SELECT v FROM VotosModel v WHERE v.idUsuario = :usuarioId AND v.publicacion.estado = 'APROBADA'")
     List<VotosModel> findVotesByUsuario(@Param("usuarioId") Long usuarioId);
 
 

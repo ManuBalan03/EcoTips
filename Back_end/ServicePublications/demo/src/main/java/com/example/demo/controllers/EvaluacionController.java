@@ -48,6 +48,8 @@ public class EvaluacionController {
             @PathVariable Long idPublicacion) {
 
         List<EvaluacionDTO> evaluaciones = evaluacionService.obtenerEvaluacionesPorPublicacion(idPublicacion);
+        System.out.println(evaluaciones);
+        System.out.println("--------------");
         return ResponseEntity.ok(evaluaciones);
     }
 

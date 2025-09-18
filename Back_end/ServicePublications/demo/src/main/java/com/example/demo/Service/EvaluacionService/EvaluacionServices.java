@@ -186,6 +186,7 @@ public class EvaluacionServices implements EvaluacionService {
     @Override
     @Transactional(readOnly = true)
     public List<EvaluacionDTO> obtenerEvaluacionesPorPublicacion(Long idPublicacion) {
+        System.out.println(evaluacionRepository.findByPublicacionIdPublicacion(idPublicacion));
         return evaluacionRepository.findByPublicacionIdPublicacion(idPublicacion).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -193,7 +194,8 @@ public class EvaluacionServices implements EvaluacionService {
 
     private EvaluacionDTO mapToDTO(EvaluacionModel evaluacion) {
         String[] datosUsuario = usuarioService.obtenerNombrePorId(evaluacion.getIdUsuario());
-
+        System.out.println(evaluacion);
+        System.out.println("--------------");
         return EvaluacionDTO.builder()
                 .idEvaluacion(evaluacion.getIdEvaluacion())
                 .veredicto(evaluacion.getVeredicto().toString())

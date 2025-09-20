@@ -136,8 +136,6 @@ public class UserServiceImpl implements UserService {
         return switch (nivelActual) {
             case "nivel 0" -> "nivel 1";
             case "nivel 1" -> "nivel 2";
-            case "nivel 2" -> "nivel 3";
-            case "nivel 3" -> "nivel 4";
             default -> nivelActual;
         };
     }
